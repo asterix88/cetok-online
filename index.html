@@ -232,7 +232,7 @@ let riwayatPageCount = 1;
 // bukan lewat Apps Script/proxy Vercel lagi. Nama fungsi (inputBarang, ambilBarang,
 // getAllData) sengaja dipertahankan sama supaya kode di bawah (inputBarang(), dst)
 // tidak perlu diubah sama sekali.
-const RIWAYAT_LIMIT_DEFAULT = 50;
+const RIWAYAT_LIMIT_DEFAULT = 20;
 
 async function runScript(fnName, ...args){
   if (fnName === 'getAllData') {
