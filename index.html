@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -78,6 +79,11 @@
   .filter-row{display:flex;gap:8px;margin-bottom:10px;}
   .filter-row select{margin-top:0;}
   .sheet-link{display:inline-block;margin-top:8px;font-size:12px;color:var(--blue);}
+  .pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 2px 2px;}
+  .pagination .pg-info{font-size:11.5px;color:var(--text-muted);}
+  .pagination .pg-btns{display:flex;gap:6px;}
+  .pagination button{cursor:pointer;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;}
+  .pagination button:disabled{opacity:0.4;cursor:default;}
 </style>
 </head>
 <body>
@@ -111,6 +117,7 @@
           <tbody id="stokTableBody"></tbody>
         </table>
         <div id="stokEmpty"></div>
+        <div class="pagination" id="stokPagination"></div>
         <a class="sheet-link" id="sheetLink" href="https://docs.google.com/spreadsheets/d/1J4iYKTAseVIB7aSbGjUBz-q2OIgeEkgJBo4XlYhOvF8/edit?gid=1483652739#gid=1483652739" target="_top">📄 Buka spreadsheet asli (untuk export Excel / backup)</a>
       </div>
     </section>
@@ -142,6 +149,7 @@
         <select id="filterUnit"><option value="">Semua Unit</option></select>
       </div>
       <div class="card" id="riwayatList"></div>
+      <div class="pagination" id="riwayatPagination"></div>
     </section>
   </main>
 </div>
@@ -209,6 +217,17 @@ let riwayatShown = 0;
 let currentSheet = 'ALL';
 let ambilSelectedPartId = null;
 
+// --- Pagination: Stok (dihitung di sisi browser karena semua data stok
+// sudah kepanggil sekali lewat getAllData) ---
+const STOK_PAGE_SIZE = 50;
+let stokPage = 1;
+
+// --- Pagination: Riwayat (diambil per-halaman langsung dari tabel Supabase,
+// jadi HP tidak perlu load SEMUA riwayat sekaligus -- cuma 50 baris per halaman) ---
+const RIWAYAT_PAGE_SIZE = 50;
+let riwayatPage = 1;
+let riwayatPageCount = 1;
+
 // runScript sekarang manggil fungsi database (RPC) di Supabase langsung dari HP,
 // bukan lewat Apps Script/proxy Vercel lagi. Nama fungsi (inputBarang, ambilBarang,
 // getAllData) sengaja dipertahankan sama supaya kode di bawah (inputBarang(), dst)
@@ -271,13 +290,52 @@ async function loadData(){
   try{
     const data = await runScript('getAllData');
     parts = data.parts;
-    transactions = data.transactions;
-    riwayatTotal = data.riwayatTotal || transactions.length;
-    riwayatShown = data.riwayatShown || transactions.length;
-    render();
+    stokPage = 1;
+    renderStats(); renderStokSheet();
   }catch(e){
-    showFatalError('Gagal memuat data dari Supabase: ' + (e.message||e));
-    render();
+    showFatalError('Gagal memuat data stok dari Supabase: ' + (e.message||e));
+    renderStats(); renderStokSheet();
+  }
+  await loadRiwayatPage(1);
+}
+
+// Ambil satu halaman riwayat langsung dari tabel "riwayat" di Supabase
+// (bukan lewat getAllData lagi), supaya HP cuma perlu narik 50 baris per
+// halaman -- bukan seluruh riwayat sekaligus. Ikut filter jenis/unit yang
+// sedang aktif, dan diurutkan dari transaksi terbaru.
+async function loadRiwayatPage(page){
+  const typeF = document.getElementById('filterType').value;
+  const unitF = document.getElementById('filterUnit').value;
+  const from = (page - 1) * RIWAYAT_PAGE_SIZE;
+  const to = from + RIWAYAT_PAGE_SIZE - 1;
+
+  let query = sb.from('riwayat')
+    .select('id, created_at, jenis, unit_model, parts_number, parts_description, qty, keterangan, nama', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
+  if (typeF) query = query.eq('jenis', typeF);
+  if (unitF) query = query.eq('unit_model', unitF);
+
+  try{
+    const { data, error, count } = await query;
+    if (error) throw error;
+    transactions = (data || []).map(r => ({
+      id: r.id,
+      ts: new Date(r.created_at).getTime(),
+      type: r.jenis,
+      unit: r.unit_model,
+      pn: r.parts_number,
+      desc: r.parts_description,
+      qty: r.qty,
+      note: r.keterangan,
+      nama: r.nama
+    }));
+    riwayatTotal = count || 0;
+    riwayatPageCount = Math.max(1, Math.ceil(riwayatTotal / RIWAYAT_PAGE_SIZE));
+    riwayatPage = page;
+    renderRiwayat();
+  }catch(e){
+    showFatalError('Gagal memuat riwayat dari Supabase: ' + (e.message||e));
   }
 }
 
@@ -301,7 +359,7 @@ function buildSelectors(){
   const btnSemua = document.createElement('button');
   btnSemua.textContent = '📦 Semua Unit'; btnSemua.dataset.code = 'ALL';
   if(currentSheet==='ALL') btnSemua.classList.add('active');
-  btnSemua.onclick = ()=>{ currentSheet = 'ALL'; document.getElementById('stok_search').value=''; renderStokSheet(); };
+  btnSemua.onclick = ()=>{ currentSheet = 'ALL'; stokPage = 1; document.getElementById('stok_search').value=''; renderStokSheet(); };
   pillsSemua.appendChild(btnSemua);
 
   const pillsExc = document.getElementById('pillsExcavator');
@@ -310,13 +368,14 @@ function buildSelectors(){
     const btn = document.createElement('button');
     btn.textContent = u.code; btn.dataset.code = u.code;
     if(u.code===currentSheet) btn.classList.add('active');
-    btn.onclick = ()=>{ currentSheet = u.code; document.getElementById('stok_search').value=''; renderStokSheet(); };
+    btn.onclick = ()=>{ currentSheet = u.code; stokPage = 1; document.getElementById('stok_search').value=''; renderStokSheet(); };
     (u.cat==='Excavator'?pillsExc:pillsBull).appendChild(btn);
   });
 }
 
 function render(){
-  renderStats(); renderStokSheet(); renderRiwayat();
+  renderStats(); renderStokSheet();
+  loadRiwayatPage(1); // transaksi baru saja tersimpan -> balik ke halaman 1 riwayat
 }
 function renderStats(){
   document.getElementById('statTotal').textContent = parts.length;
@@ -342,25 +401,53 @@ function renderStokSheet(){
     tbody.innerHTML='';
     const msg = q ? `Tidak ada parts number/nama yang cocok dengan "<strong>${esc(q)}</strong>".` : `Belum ada data sparepart untuk <strong>${esc(currentSheet)}</strong>.`;
     emptyEl.innerHTML = `<div class="empty"><div class="big">📭</div>${msg}</div>`;
+    document.getElementById('stokPagination').innerHTML = '';
     return;
   }
   emptyEl.innerHTML='';
-  tbody.innerHTML = rows.map((p,i)=>`<tr><td>${i+1}</td><td class="pn">${esc(p.pn)}</td><td>${esc(p.desc)}</td><td>🚜 ${esc(p.unit)}</td><td class="loc">${esc(p.loc||'-')}</td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td></tr>`).join('');
+
+  // Pagination 50 item/halaman: kalau ada 126 parts -> hal.1 = 50, hal.2 = 50, hal.3 = 26
+  const totalPages = Math.max(1, Math.ceil(rows.length / STOK_PAGE_SIZE));
+  if(stokPage > totalPages) stokPage = totalPages;
+  if(stokPage < 1) stokPage = 1;
+  const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
+  const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
+
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr><td>${startIdx+i+1}</td><td class="pn">${esc(p.pn)}</td><td>${esc(p.desc)}</td><td>🚜 ${esc(p.unit)}</td><td class="loc">${esc(p.loc||'-')}</td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td></tr>`).join('');
+
+  renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
+    stokPage = newPage;
+    renderStokSheet();
+  });
 }
-document.getElementById('stok_search').addEventListener('input', renderStokSheet);
+document.getElementById('stok_search').addEventListener('input', ()=>{ stokPage = 1; renderStokSheet(); });
+
+// Kontrol Prev/Next generik, dipakai untuk tab Stok maupun tab Riwayat
+function renderPaginationControls(containerId, page, totalPages, totalCount, unitLabel, onChange){
+  const el = document.getElementById(containerId);
+  if(totalPages <= 1 && totalCount <= 0){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="pg-info">Halaman ${page} dari ${totalPages} &middot; total ${totalCount} ${unitLabel}</div>
+    <div class="pg-btns">
+      <button type="button" id="${containerId}_prev" ${page<=1?'disabled':''}>‹ Prev</button>
+      <button type="button" id="${containerId}_next" ${page>=totalPages?'disabled':''}>Next ›</button>
+    </div>`;
+  const prevBtn = document.getElementById(containerId+'_prev');
+  const nextBtn = document.getElementById(containerId+'_next');
+  if(prevBtn) prevBtn.onclick = ()=>{ if(page>1) onChange(page-1); };
+  if(nextBtn) nextBtn.onclick = ()=>{ if(page<totalPages) onChange(page+1); };
+}
 function renderRiwayat(){
-  const typeF = document.getElementById('filterType').value;
-  const unitF = document.getElementById('filterUnit').value;
-  let list = [...transactions];
-  if(typeF) list = list.filter(t=>t.type===typeF);
-  if(unitF) list = list.filter(t=>t.unit===unitF);
-  list.sort((a,b)=>b.ts-a.ts);
+  // transactions di sini SUDAH berupa satu halaman (maks 50 baris) hasil
+  // query ke Supabase di loadRiwayatPage() -- tidak difilter/diurutkan lagi
+  // di sini, itu sudah dikerjakan oleh server.
   const el = document.getElementById('riwayatList');
-  if(list.length===0){ el.innerHTML = `<div class="empty"><div class="big">🕘</div>Belum ada riwayat transaksi.</div>`; return; }
-  const infoBar = (riwayatTotal > riwayatShown)
-    ? `<div class="tx-meta" style="padding:8px 4px;">Menampilkan ${riwayatShown} transaksi terbaru dari total ${riwayatTotal} transaksi (dibatasi supaya aplikasi tetap cepat).</div>`
-    : '';
-  el.innerHTML = infoBar + list.map(t=>`
+  if(transactions.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">🕘</div>Belum ada riwayat transaksi.</div>`;
+    document.getElementById('riwayatPagination').innerHTML = '';
+    return;
+  }
+  el.innerHTML = transactions.map(t=>`
     <div class="tx-row">
       <div>
         <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
@@ -375,9 +462,13 @@ function renderRiwayat(){
         <div style="font-family:'Oswald',sans-serif;font-weight:600;margin-top:4px;">${t.type==='masuk'?'+':'-'}${t.qty}</div>
       </div>
     </div>`).join('');
+
+  renderPaginationControls('riwayatPagination', riwayatPage, riwayatPageCount, riwayatTotal, 'transaksi', (newPage)=>{
+    loadRiwayatPage(newPage);
+  });
 }
-document.getElementById('filterType').addEventListener('change', renderRiwayat);
-document.getElementById('filterUnit').addEventListener('change', renderRiwayat);
+document.getElementById('filterType').addEventListener('change', ()=>loadRiwayatPage(1));
+document.getElementById('filterUnit').addEventListener('change', ()=>loadRiwayatPage(1));
 
 async function inputBarang(){
   const unit = document.getElementById('in_unit').value;
@@ -447,6 +538,36 @@ async function ambilBarang(){
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
   btn.disabled=false; btn.textContent='Simpan Ambil Barang';
 }
+
+// --- Submit pakai tombol Enter di keyboard (selain klik tombol Simpan) ---
+// Syaratnya: SEMUA kolom wajib di tab itu sudah terisi. Kalau belum,
+// tombol Enter tidak melakukan apa-apa (tidak submit form kosong/setengah).
+function isInputFormReady(){
+  const pn = document.getElementById('in_pn').value.trim();
+  const desc = document.getElementById('in_desc').value.trim();
+  const qty = Number(document.getElementById('in_qty').value);
+  const nama = document.getElementById('in_nama').value.trim();
+  return !!pn && !!desc && qty > 0 && !!nama;
+}
+function isAmbilFormReady(){
+  const qty = Number(document.getElementById('ax_qty').value);
+  const note = document.getElementById('ax_note').value.trim();
+  const nama = document.getElementById('ax_nama').value.trim();
+  return !!ambilSelectedPartId && qty > 0 && !!note && !!nama;
+}
+function enableEnterToSubmit(sectionId, isReadyFn, submitFn){
+  document.querySelectorAll('#'+sectionId+' input, #'+sectionId+' select').forEach(el=>{
+    el.addEventListener('keydown', (e)=>{
+      if(e.key !== 'Enter') return;
+      e.preventDefault(); // supaya Enter tidak reload halaman/submit form browser
+      if(isReadyFn()) submitFn();
+      // kalau belum lengkap, Enter diabaikan begitu saja -- user tetap harus
+      // melengkapi kolom yang kosong dulu.
+    });
+  });
+}
+enableEnterToSubmit('tab-input', isInputFormReady, inputBarang);
+enableEnterToSubmit('tab-ambil', isAmbilFormReady, ambilBarang);
 
 init();
 </script>
