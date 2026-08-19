@@ -195,9 +195,12 @@ const UNIT_MODELS = [
 // Key ini MEMANG untuk dipasang di frontend/publik — bukan rahasia seperti password.
 // Yang menjaga keamanan adalah aturan RLS + fungsi database (lihat schema.sql).
 // JANGAN pernah pasang "Secret key" (sb_secret_...) atau "service_role" di sini.
-const SUPABASE_URL = 'zdmlydqxvtvuktcfijzx';
+const SUPABASE_URL = 'https://zdmlydqxvtvuktcfijzx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkbWx5ZHF4dnR2dWt0Y2Zpanp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjE2NTksImV4cCI6MjEwMjY5NzY1OX0.HbZY03oiDZ9J7RkakbtVR3S3Dze89ttd2NbLQkqGYPY';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Dinamai "sb" (bukan "supabase") karena library supabase-js versi CDN ini
+// sudah otomatis membuat variabel global bernama "supabase" -- pakai nama sama
+// akan bentrok dan bikin SELURUH javascript di halaman berhenti jalan.
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let parts = [];
 let transactions = [];
@@ -215,14 +218,14 @@ const RIWAYAT_LIMIT_DEFAULT = 50;
 async function runScript(fnName, ...args){
   if (fnName === 'getAllData') {
     const limit = Number(args[0]) || RIWAYAT_LIMIT_DEFAULT;
-    const { data, error } = await supabase.rpc('get_all_data', { p_riwayat_limit: limit });
+    const { data, error } = await sb.rpc('get_all_data', { p_riwayat_limit: limit });
     if (error) throw new Error(error.message || 'Gagal mengambil data');
     return data;
   }
 
   if (fnName === 'inputBarang') {
     const [unit, pn, desc, loc, qty, nama] = args;
-    const { error } = await supabase.rpc('input_barang', {
+    const { error } = await sb.rpc('input_barang', {
       p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_nama: nama
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan input barang');
@@ -231,7 +234,7 @@ async function runScript(fnName, ...args){
 
   if (fnName === 'ambilBarang') {
     const [unit, pn, qty, note, nama] = args;
-    const { error } = await supabase.rpc('ambil_barang', {
+    const { error } = await sb.rpc('ambil_barang', {
       p_unit: unit, p_pn: pn, p_qty: qty, p_note: note, p_nama: nama
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan ambil barang');
