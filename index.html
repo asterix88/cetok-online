@@ -219,12 +219,12 @@ let ambilSelectedPartId = null;
 
 // --- Pagination: Stok (dihitung di sisi browser karena semua data stok
 // sudah kepanggil sekali lewat getAllData) ---
-const STOK_PAGE_SIZE = 50;
+const STOK_PAGE_SIZE = 20;
 let stokPage = 1;
 
 // --- Pagination: Riwayat (diambil per-halaman langsung dari tabel Supabase,
 // jadi HP tidak perlu load SEMUA riwayat sekaligus -- cuma 50 baris per halaman) ---
-const RIWAYAT_PAGE_SIZE = 50;
+const RIWAYAT_PAGE_SIZE = 20;
 let riwayatPage = 1;
 let riwayatPageCount = 1;
 
