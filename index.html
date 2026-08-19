@@ -83,6 +83,9 @@
   .pagination .pg-btns{display:flex;gap:6px;}
   .pagination button{cursor:pointer;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;}
   .pagination button:disabled{opacity:0.4;cursor:default;}
+  .suggest-scroll{max-height:260px;overflow-y:auto;margin:6px 0 10px;padding-right:2px;}
+  .suggest-scroll::-webkit-scrollbar{width:6px;}
+  .suggest-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 </style>
 </head>
 <body>
@@ -499,51 +502,21 @@ function partMatchesQuery(p, q){
   return p.pn.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q));
 }
 
-// --- Tab Input: ketika parts number yang diketik SUDAH PERNAH diinput
-// sebelumnya (exact match), munculkan popup supaya deskripsinya tidak
-// perlu ditulis ulang -- tinggal klik "Pakai Deskripsi Ini". Kalau baru
-// ketik sebagian dan belum ada yang persis sama, tetap dikasih daftar
-// part yang mirip (dari nomor ATAU nama part) supaya tidak salah ketik/dobel. ---
+// --- Tab Input: sambil ketik parts number, tampilkan daftar part yang
+// mirip (dari nomor ATAU nama part) supaya tidak salah ketik/dobel input.
+// Klik salah satu saran untuk isi otomatis parts number + description sekaligus.
 document.getElementById('in_pn').addEventListener('input', function(e){
   const q = e.target.value.trim().toLowerCase();
   const box = document.getElementById('in_matches');
   if(!q){ box.innerHTML=''; return; }
 
-  const exact = parts.filter(p=>p.pn.toLowerCase()===q);
-  if(exact.length){
-    // Kumpulkan deskripsi unik (kadang part sama dipakai di unit berbeda
-    // dengan penulisan deskripsi yang beda-beda -- kasih pilihan kalau begitu).
-    const uniqueDescs = [...new Map(exact.map(p=>[ (p.desc||'').toLowerCase(), p ])).values()];
-    if(uniqueDescs.length===1){
-      const p = uniqueDescs[0];
-      box.innerHTML = `<div class="found-card" style="border-color:var(--amber);background:var(--amber-dim);">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">✅ Parts number ini sudah pernah diinput sebelumnya:</div>
-        <div class="nm">${esc(p.desc)}</div>
-        <button type="button" class="btn btn-amber" style="margin-top:4px;font-size:12.5px;padding:8px 12px;" onclick="useSameDesc('${p.id}')">Pakai Deskripsi Ini</button>
-      </div>`;
-    } else {
-      box.innerHTML = `<div style="margin:6px 0 10px;">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Parts number ini pernah diinput dengan deskripsi berbeda, pilih salah satu:</div>
-        ${uniqueDescs.map(p=>`<button type="button" class="btn btn-outline" style="display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12.5px;" onclick="useSameDesc('${p.id}')">${esc(p.desc)} <span style="color:var(--amber);">(${esc(p.unit)})</span></button>`).join('')}
-      </div>`;
-    }
-    return;
-  }
-
-  // Belum ada yang persis sama -- tampilkan saran part yang mirip (dari nomor atau nama part)
   const partial = parts.filter(p=>partMatchesQuery(p,q));
   if(partial.length===0){ box.innerHTML=''; return; }
-  box.innerHTML = `<div style="margin:6px 0 10px;">` + partial.slice(0,6).map(p=>`
+  box.innerHTML = `<div class="suggest-scroll">` + partial.map(p=>`
     <button type="button" class="btn btn-outline" style="display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12.5px;" onclick="pickInputSuggestion('${p.id}')">
       <span class="mono">${esc(p.pn)}</span> — ${esc(p.desc)} <span style="color:var(--amber);">(${esc(p.unit)})</span>
     </button>`).join('') + `</div>`;
 });
-function useSameDesc(id){
-  const p = parts.find(x=>x.id===id);
-  if(!p) return;
-  document.getElementById('in_desc').value = p.desc;
-  document.getElementById('in_matches').innerHTML='';
-}
 function pickInputSuggestion(id){
   const p = parts.find(x=>x.id===id);
   if(!p) return;
@@ -561,7 +534,7 @@ document.getElementById('ax_pn').addEventListener('input', function(e){
   const matches = parts.filter(p=>partMatchesQuery(p,q));
   if(matches.length===0){ matchesEl.innerHTML = `<div style="color:var(--red);font-size:12.5px;margin:4px 0 10px;">Parts number / nama part tidak ditemukan.</div>`; return; }
   if(matches.length===1 && matches[0].pn.toLowerCase()===q){ selectAmbilPart(matches[0].id); matchesEl.innerHTML=''; return; }
-  matchesEl.innerHTML = `<div style="margin:6px 0 10px;">` + matches.slice(0,8).map(p=>`
+  matchesEl.innerHTML = `<div class="suggest-scroll">` + matches.map(p=>`
     <button type="button" class="btn btn-outline" style="display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12.5px;" onclick="selectAmbilPart('${p.id}')">
       <span class="mono">${esc(p.pn)}</span> — ${esc(p.desc)} <span style="color:var(--amber);">(${esc(p.unit)}, stok ${p.qty})</span>
     </button>`).join('') + `</div>`;
