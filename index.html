@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -100,6 +101,9 @@
   .tx-tag.keluar{background:var(--red-dim);color:var(--red);}
   .tx-meta{font-size:11px;color:var(--text-muted);margin-top:3px;}
   .tx-unit{font-size:10.5px;color:var(--amber);}
+  .status-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap;}
+  .status-badge.rfu{background:var(--green-dim);color:var(--green);}
+  .status-badge.not-rfu{background:var(--red-dim);color:var(--red);}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--amber);padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;max-width:90%;text-align:center;}
   .filter-row{display:flex;gap:8px;margin-bottom:10px;}
   .filter-row select{margin-top:0;}
@@ -123,8 +127,13 @@
     50%{transform:rotate(180deg) scale(1.15);}
     100%{transform:rotate(360deg) scale(1);}
   }
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
-  .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;
+    opacity:0;transition:opacity .2s ease;}
+  .modal-overlay.open{opacity:1;}
+  .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;
+    transform:scale(0.9) translateY(12px);opacity:0;
+    transition:transform .28s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;}
+  .modal-overlay.open .modal-card{transform:scale(1) translateY(0);opacity:1;}
   .modal-card h3{margin:0 0 14px;font-family:'Oswald',sans-serif;font-size:16px;}
   .modal-actions{display:flex;gap:8px;margin-top:6px;}
   .modal-actions .btn{flex:1;}
@@ -161,6 +170,11 @@
       <div class="field"><input id="stok_search" placeholder="🔍 Cari parts number atau nama part..."></div>
       <div class="filter-row">
         <select id="stok_loc_filter"><option value="">📍 Semua Lokasi</option></select>
+        <select id="stok_status_filter">
+          <option value="">Semua Status</option>
+          <option value="RFU">RFU</option>
+          <option value="NOT RFU">NOT RFU</option>
+        </select>
       </div>
       <div class="sheet-pills" id="pillsSemua"></div>
       <div class="cat-label">Excavator</div>
@@ -169,7 +183,7 @@
       <div class="sheet-pills" id="pillsBulldozer"></div>
       <div class="card">
         <table>
-          <thead><tr><th>No</th><th>Parts Number</th><th>Parts Description</th><th>Unit</th><th>Lokasi</th><th style="text-align:right;">Qty</th><th class="actions-col" id="stokActionsHead" style="display:none;">Aksi</th></tr></thead>
+          <thead><tr><th>No</th><th>Parts Number</th><th>Parts Description</th><th>Unit</th><th>Status</th><th>Lokasi</th><th style="text-align:right;">Qty</th><th class="actions-col" id="stokActionsHead" style="display:none;">Aksi</th></tr></thead>
           <tbody id="stokTableBody"></tbody>
         </table>
         <div id="stokEmpty"></div>
@@ -195,6 +209,12 @@
         <div class="field"><label>Parts Description</label><input id="in_desc" class="mono" placeholder="cth: Plug final drive"></div>
         <div class="field"><label>Lokasi Penyimpanan</label><input id="in_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Rak abu, Lemari hijau, Laydown"></div>
         <datalist id="loc_datalist"></datalist>
+        <div class="field"><label>Status</label>
+          <select id="in_status">
+            <option value="RFU" selected>RFU</option>
+            <option value="NOT RFU">NOT RFU</option>
+          </select>
+        </div>
         <div class="field"><label>Quantity</label><input id="in_qty" type="number" min="1" class="mono" placeholder="0"></div>
         <div class="field"><label>Nama Penginput</label><input id="in_nama" class="mono" placeholder="Masukan nama anda"></div>
         <button class="btn btn-green btn-block" id="btnInput" onclick="inputBarang()">Simpan Input Barang</button>
@@ -219,7 +239,7 @@
 <div id="loginModal" class="modal-overlay" style="display:none;">
   <div class="modal-card">
     <h3>Login Admin</h3>
-    <div class="field"><label>Password Admin</label><input id="login_password" type="password" class="mono" placeholder="Masukkan password admin"></div>
+    <div class="field"><label>Masukan password</label><input id="login_password" type="password" class="mono" placeholder="Masukkan password admin"></div>
     <div class="modal-error" id="loginError"></div>
     <div class="modal-actions">
       <button type="button" class="btn btn-outline" onclick="closeModal('loginModal')">Batal</button>
@@ -231,13 +251,19 @@
 <!-- Modal Edit Part (tab Stok) -->
 <div id="editPartModal" class="modal-overlay" style="display:none;">
   <div class="modal-card">
-    <h3>✏️ Edit Data Stok</h3>
+    <h3>Edit Data Stok</h3>
     <div class="field"><label>Unit Model</label><select id="ep_unit"></select></div>
     <div class="field"><label>Parts Number</label><input id="ep_pn" class="mono"></div>
     <div class="field"><label>Parts Description</label><input id="ep_desc" class="mono"></div>
     <div class="field"><label>Lokasi Penyimpanan</label><input id="ep_loc" class="mono" list="loc_datalist" autocomplete="off"></div>
+    <div class="field"><label>Status</label>
+      <select id="ep_status">
+        <option value="RFU">RFU</option>
+        <option value="NOT RFU">NOT RFU</option>
+      </select>
+    </div>
     <div class="field"><label>Qty</label><input id="ep_qty" type="number" min="0" class="mono">
-      <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">⚠️ Ubah Qty di sini cuma koreksi tampilan, TIDAK tercatat di Riwayat. Untuk transaksi masuk/keluar normal, tetap pakai form Input/Ambil Barang.</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:5px;"></div>
     </div>
     <div class="modal-error" id="editPartError"></div>
     <div class="modal-actions">
@@ -250,13 +276,13 @@
 <!-- Modal Edit Riwayat (tab Riwayat) -->
 <div id="editRiwayatModal" class="modal-overlay" style="display:none;">
   <div class="modal-card">
-    <h3>✏️ Edit Riwayat</h3>
+    <h3>Edit Riwayat</h3>
     <div class="field"><label>Unit Model</label><select id="er_unit"></select></div>
     <div class="field"><label>Parts Number</label><input id="er_pn" class="mono"></div>
     <div class="field"><label>Parts Description</label><input id="er_desc" class="mono"></div>
     <div class="field"><label>Keterangan</label><input id="er_note" class="mono"></div>
     <div class="field"><label>Nama</label><input id="er_nama" class="mono">
-      <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">ℹ️ Cuma buat perbaiki salah ketik di catatan. Jenis (Input/Ambil) dan Qty transaksi tidak bisa diubah di sini, supaya stok saat ini tidak jadi tidak sinkron.</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">Note : Hanya untuk perbaiki salah ketik di catatan. Jenis (Input/Ambil) dan Qty transaksi tidak bisa diubah di sini, supaya stok saat ini tidak jadi tidak sinkron.</div>
     </div>
     <div class="modal-error" id="editRiwayatError"></div>
     <div class="modal-actions">
@@ -348,9 +374,22 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const ADMIN_EMAIL = 'admin@cetok.local';
 let isAdmin = false;
 
-function openModal(id){ document.getElementById(id).style.display = 'flex'; }
+// Animasi pop-up: 'display' diubah dulu, baru class 'open' ditambahkan
+// sesaat setelahnya (2x requestAnimationFrame) supaya browser sempat
+// "melihat" state awal (kecil & transparan) sebelum transisi ke state
+// akhir -- tanpa jeda ini, perubahan style dianggap terjadi bersamaan
+// dan modal akan langsung muncul tanpa animasi sama sekali.
+function openModal(id){
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{ el.classList.add('open'); });
+  });
+}
 function closeModal(id){
-  document.getElementById(id).style.display = 'none';
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  setTimeout(()=>{ el.style.display = 'none'; }, 200); // samakan dgn durasi transisi opacity overlay
   const errEl = document.getElementById(id.replace('Modal','Error'));
   if(errEl) errEl.textContent = '';
 }
@@ -439,18 +478,22 @@ async function runScript(fnName, ...args){
   }
 
   if (fnName === 'inputBarang') {
-    const [unit, pn, desc, loc, qty, nama] = args;
+    const [unit, pn, desc, loc, qty, nama, status] = args;
     const { error } = await sb.rpc('input_barang', {
-      p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_nama: nama
+      p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_nama: nama, p_status: status
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan input barang');
     return runScript('getAllData');
   }
 
   if (fnName === 'ambilBarang') {
-    const [unit, pn, qty, note, nama] = args;
+    // Pakai ID baris yang persis (bukan lagi unit+pn saja) -- karena sekarang
+    // satu parts number + unit model yang sama bisa punya BEBERAPA baris stok
+    // terpisah kalau lokasi atau status RFU/NOT RFU-nya beda. ID memastikan
+    // yang dikurangi stoknya benar-benar baris yang dipilih user.
+    const [id, qty, note, nama] = args;
     const { error } = await sb.rpc('ambil_barang', {
-      p_unit: unit, p_pn: pn, p_qty: qty, p_note: note, p_nama: nama
+      p_id: id, p_qty: qty, p_note: note, p_nama: nama
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan ambil barang');
     return runScript('getAllData');
@@ -458,9 +501,9 @@ async function runScript(fnName, ...args){
 
   // --- Fungsi khusus admin (butuh login, dicek lewat RLS di database) ---
   if (fnName === 'updatePart') {
-    const [id, unit, pn, desc, loc, qty] = args;
+    const [id, unit, pn, desc, loc, qty, status] = args;
     const { error } = await sb.rpc('update_part', {
-      p_id: id, p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty
+      p_id: id, p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_status: status
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan perubahan stok');
     return runScript('getAllData');
@@ -487,6 +530,15 @@ function toast(msg){
   setTimeout(()=>el.remove(), 2800);
 }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Badge kecil buat status RFU/NOT RFU. Data lama (sebelum kolom status
+// ditambahkan di database) mungkin belum punya nilai status -- dianggap
+// RFU secara default supaya tidak ada part yang "hilang" cuma karena
+// field-nya kosong.
+function statusBadge(status){
+  const s = (status || 'RFU').toUpperCase();
+  const isRfu = s === 'RFU';
+  return `<span class="status-badge ${isRfu?'rfu':'not-rfu'}">${isRfu?'RFU':'NOT RFU'}</span>`;
+}
 
 function init(){
   try{
@@ -528,7 +580,7 @@ async function loadRiwayatPage(page){
   const to = from + RIWAYAT_PAGE_SIZE - 1;
 
   let query = sb.from('riwayat')
-    .select('id, created_at, jenis, unit_model, parts_number, parts_description, qty, keterangan, nama', { count: 'exact' })
+    .select('id, created_at, jenis, unit_model, parts_number, parts_description, qty, keterangan, nama, status_rfu', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to);
   if (typeF) query = query.eq('jenis', typeF);
@@ -554,7 +606,8 @@ async function loadRiwayatPage(page){
       desc: r.parts_description,
       qty: r.qty,
       note: r.keterangan,
-      nama: r.nama
+      nama: r.nama,
+      status: r.status_rfu
     }));
     riwayatTotal = count || 0;
     riwayatPageCount = Math.max(1, Math.ceil(riwayatTotal / RIWAYAT_PAGE_SIZE));
@@ -647,6 +700,7 @@ function populateLocationFilter(){
     locations.map(loc=>`<option value="${esc(loc)}">`).join('');
 }
 document.getElementById('stok_loc_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
+document.getElementById('stok_status_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
 
 function renderStokSheet(){
   document.querySelectorAll('.sheet-pills button').forEach(b=>b.classList.toggle('active', b.dataset.code===currentSheet));
@@ -671,6 +725,10 @@ function renderStokSheet(){
   const locFilter = document.getElementById('stok_loc_filter').value;
   if(locFilter){
     rows = rows.filter(p => (p.loc || '').trim().toLowerCase() === locFilter);
+  }
+  const statusFilter = document.getElementById('stok_status_filter').value;
+  if(statusFilter){
+    rows = rows.filter(p => (p.status || 'RFU').toUpperCase() === statusFilter);
   }
 
   if(rows.length===0){
@@ -698,7 +756,7 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr><td>${startIdx+i+1}</td><td class="pn">${esc(p.pn)}</td><td>${esc(p.desc)}</td><td>🚜 ${esc(p.unit)}</td><td class="loc">${esc(p.loc||'-')}</td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td>${isAdmin?`<td class="actions-col"><button type="button" class="edit-btn" onclick="openEditPart('${p.id}')">✏️</button></td>`:''}</tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr><td>${startIdx+i+1}</td><td class="pn">${esc(p.pn)}</td><td>${esc(p.desc)}</td><td>🚜 ${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="loc">${esc(p.loc||'-')}</td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td>${isAdmin?`<td class="actions-col"><button type="button" class="edit-btn" onclick="openEditPart('${p.id}')">✏️</button></td>`:''}</tr>`).join('');
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
     stokPage = newPage;
@@ -717,6 +775,7 @@ function showStokKosong(){
   currentSheet = 'ALL';
   document.getElementById('stok_search').value = '';
   document.getElementById('stok_loc_filter').value = '';
+  document.getElementById('stok_status_filter').value = '';
   stokPage = 1;
   switchTab('stok');
   renderStokSheet();
@@ -761,7 +820,7 @@ function renderRiwayat(){
       <div>
         <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
         <div class="tx-meta mono">${esc(t.pn)}</div>
-        <div class="tx-unit">🚜 ${esc(t.unit)}</div>
+        <div class="tx-unit">${esc(t.unit)} &nbsp;${statusBadge(t.status)}</div>
         ${t.note ? `<div class="tx-meta">📝 ${esc(t.note)}</div>` : ''}
         ${t.nama ? `<div class="tx-meta">👤 ${esc(t.nama)}</div>` : ''}
         <div class="tx-meta">${new Date(t.ts).toLocaleString('id-ID')}</div>
@@ -794,6 +853,7 @@ async function inputBarang(){
   const pn = document.getElementById('in_pn').value.trim();
   const desc = document.getElementById('in_desc').value.trim();
   const loc = document.getElementById('in_loc').value.trim();
+  const status = document.getElementById('in_status').value;
   const qty = Number(document.getElementById('in_qty').value);
   const nama = document.getElementById('in_nama').value.trim();
   if(!pn || !desc){ toast('Parts Number dan Description wajib diisi'); return; }
@@ -802,10 +862,10 @@ async function inputBarang(){
 
   const btn = document.getElementById('btnInput'); btn.disabled = true; btn.textContent='Menyimpan...';
   try{
-    const data = await runScript('inputBarang', unit, pn, desc, loc, qty, nama);
+    const data = await runScript('inputBarang', unit, pn, desc, loc, qty, nama, status);
     parts = data.parts; transactions = data.transactions;
-    toast(`Input tersimpan untuk ${pn} di ${unit}`);
-    document.getElementById('in_pn').value=''; document.getElementById('in_desc').value=''; document.getElementById('in_loc').value=''; document.getElementById('in_qty').value='';
+    toast(`Input tersimpan untuk ${pn} di ${unit} (${status})`);
+    document.getElementById('in_pn').value=''; document.getElementById('in_desc').value=''; document.getElementById('in_loc').value=''; document.getElementById('in_qty').value=''; document.getElementById('in_status').value='RFU';
     try{ localStorage.setItem('stok_nama_terakhir', nama); }catch(e){}
     currentSheet = unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
@@ -840,6 +900,12 @@ function pickInputSuggestion(id){
   if(!p) return;
   document.getElementById('in_pn').value = p.pn;
   document.getElementById('in_desc').value = p.desc;
+  // Ikut isikan lokasi & status dari part yang dipilih -- kalau user memang
+  // maksudnya menambah qty ke baris stok yang PERSIS sama (unit+pn+lokasi+status),
+  // ini membantu supaya tidak keliru bikin baris baru yang terpisah.
+  // User tetap bebas mengubahnya kalau memang mau bikin baris terpisah.
+  document.getElementById('in_loc').value = p.loc || '';
+  document.getElementById('in_status').value = (p.status || 'RFU').toUpperCase();
   document.getElementById('in_matches').innerHTML='';
   updateInputButtonState();
 }
@@ -856,7 +922,7 @@ document.getElementById('ax_pn').addEventListener('input', function(e){
   if(matches.length===1 && matches[0].pn.toLowerCase()===q){ selectAmbilPart(matches[0].id); matchesEl.innerHTML=''; return; }
   matchesEl.innerHTML = `<div class="suggest-scroll">` + matches.map(p=>`
     <button type="button" class="btn btn-outline" style="display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12.5px;" onclick="selectAmbilPart('${p.id}')">
-      <span class="mono">${esc(p.pn)}</span> — ${esc(p.desc)} <span style="color:var(--amber);">(${esc(p.unit)}, stok ${p.qty})</span>
+      <span class="mono">${esc(p.pn)}</span> — ${esc(p.desc)} <span style="color:var(--amber);">(${esc(p.unit)}, ${esc(p.loc||'-')}, stok ${p.qty})</span> ${statusBadge(p.status)}
     </button>`).join('') + `</div>`;
 });
 function selectAmbilPart(id){
@@ -865,7 +931,7 @@ function selectAmbilPart(id){
   if(!p) return;
   document.getElementById('ax_matches').innerHTML='';
   document.getElementById('ax_pn').value = p.pn;
-  document.getElementById('ax_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''}</div><span class="unit">🚜 ${esc(p.unit)}</span></div>`;
+  document.getElementById('ax_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">🚜 ${esc(p.unit)}</span></div>`;
   updateAmbilButtonState();
 }
 async function ambilBarang(){
@@ -881,7 +947,7 @@ async function ambilBarang(){
 
   const btn = document.getElementById('btnAmbil'); btn.disabled=true; btn.textContent='Menyimpan...';
   try{
-    const data = await runScript('ambilBarang', part.unit, part.pn, qty, note, nama);
+    const data = await runScript('ambilBarang', part.id, qty, note, nama);
     parts = data.parts; transactions = data.transactions;
     toast(`Ambil barang tersimpan untuk ${part.pn}`);
     document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value='';
@@ -965,6 +1031,7 @@ function openEditPart(id){
   document.getElementById('ep_pn').value = p.pn;
   document.getElementById('ep_desc').value = p.desc;
   document.getElementById('ep_loc').value = p.loc || '';
+  document.getElementById('ep_status').value = (p.status || 'RFU').toUpperCase();
   document.getElementById('ep_qty').value = p.qty;
   document.getElementById('editPartModal').dataset.editId = id;
   document.getElementById('editPartError').textContent = '';
@@ -976,13 +1043,14 @@ async function saveEditPart(){
   const pn = document.getElementById('ep_pn').value.trim();
   const desc = document.getElementById('ep_desc').value.trim();
   const loc = document.getElementById('ep_loc').value.trim();
+  const status = document.getElementById('ep_status').value;
   const qty = Number(document.getElementById('ep_qty').value);
   const errEl = document.getElementById('editPartError');
   if(!pn || !desc){ errEl.textContent = 'Parts Number dan Description wajib diisi.'; return; }
   const btn = document.getElementById('btnSaveEditPart');
   btn.disabled = true; btn.textContent = 'Menyimpan...';
   try{
-    await runScript('updatePart', id, unit, pn, desc, loc, qty);
+    await runScript('updatePart', id, unit, pn, desc, loc, qty, status);
     closeModal('editPartModal');
     toast('Data stok berhasil diperbarui');
   }catch(e){
