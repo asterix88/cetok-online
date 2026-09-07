@@ -824,7 +824,7 @@ function renderRiwayat(){
         ${t.note ? `<div class="tx-meta">📝 ${esc(t.note)}</div>` : ''}
         ${t.nama ? `<div class="tx-meta">👤 ${esc(t.nama)}</div>` : ''}
         <div class="tx-meta">${new Date(t.ts).toLocaleString('id-ID')}</div>
-        ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">✏️ Edit</button>` : ''}
+        ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">Edit</button>` : ''}
       </div>
       <div style="text-align:right;">
         <span class="tx-tag ${t.type}">${t.type==='masuk'?'Input':'Ambil'}</span>
