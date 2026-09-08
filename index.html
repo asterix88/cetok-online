@@ -1084,9 +1084,11 @@ async function saveEditPart(){
   const btn = document.getElementById('btnSaveEditPart');
   btn.disabled = true; btn.textContent = 'Menyimpan...';
   try{
-    await runScript('updatePart', id, unit, pn, desc, loc, qty, status, remarks);
+    const data = await runScript('updatePart', id, unit, pn, desc, loc, qty, status, remarks);
+    parts = data.parts; transactions = data.transactions;
     closeModal('editPartModal');
     toast('Data stok berhasil diperbarui');
+    render();
   }catch(e){
     errEl.textContent = e.message || 'Gagal menyimpan.';
   }finally{
