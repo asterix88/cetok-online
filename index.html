@@ -93,6 +93,31 @@
   td.qty{font-family:'Oswald',sans-serif;font-weight:600;text-align:right;}
   td.loc{color:var(--text);font-weight:500;font-size:13px;}
   td.qty.low{color:var(--red);}
+
+  /* --- Tampilan mobile: baris tabel Stok jadi kartu ringkas --- */
+  @media (max-width:680px){
+    #tab-stok .card{padding:8px;}
+    #tab-stok table,#tab-stok tbody,#tab-stok tr{display:block;width:100%;}
+    #tab-stok thead{display:none;}
+    #tab-stok tr{
+      display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px;
+      background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+      padding:11px 12px;margin-bottom:7px;
+    }
+    #tab-stok tr:last-child{margin-bottom:0;}
+    #tab-stok td{display:block;border:none;padding:0;width:auto;font-size:12.5px;}
+    #tab-stok td:nth-child(1){display:none;}                                   /* No */
+    #tab-stok td.pn{order:1;font-size:12px;}                                    /* Parts Number */
+    #tab-stok td:nth-child(5){order:2;margin-left:auto;}                        /* Status */
+    #tab-stok td:nth-child(3){order:3;flex-basis:100%;font-size:14.5px;font-weight:600;color:var(--text);margin:1px 0 2px;} /* Deskripsi */
+    #tab-stok td:nth-child(4){order:4;color:var(--text-muted);}                 /* Unit */
+    #tab-stok td.loc{order:5;color:var(--text-muted);}
+    #tab-stok td.loc::before{content:"·";margin-right:8px;color:var(--border);}
+    #tab-stok td.qty{order:6;margin-left:auto;font-size:15px;}                  /* Qty */
+    #tab-stok td:nth-child(8){order:7;flex-basis:100%;color:var(--text-muted);font-size:12px;margin-top:3px;} /* Keterangan */
+    #tab-stok td.actions-col{order:8;flex-basis:100%;margin-top:7px;}
+    #tab-stok td.actions-col .edit-btn{width:100%;}
+  }
   .tx-row{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;}
   .tx-row:last-child{border-bottom:none;}
   .tx-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;text-transform:uppercase;}
