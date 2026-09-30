@@ -110,11 +110,7 @@
   td.qty.low{color:var(--red);}
 
   /* Elemen khusus mobile di dalam sel deskripsi: disembunyikan di desktop */
-  .m-pn{display:none;}
-  /* Catatan (dulu kolom "Keterangan" terpisah) -- sekarang selalu tampil di
-     sini di semua ukuran layar, supaya tidak perlu geser tabel untuk melihatnya. */
-  .m-note{display:block;font-size:11.5px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
-  .m-note b{font-weight:700;}
+  .m-pn,.m-note{display:none;}
 
   /* --- Tampilan mobile: tetap TABEL, tapi dipadatkan --- */
   @media (max-width:680px){
@@ -124,10 +120,12 @@
     #tab-stok td{padding:8px 4px;font-size:11.5px;vertical-align:top;}
     /* kolom yang digabung ke sel deskripsi / disembunyikan */
     #tab-stok th:nth-child(1),#tab-stok td:nth-child(1),   /* No */
-    #tab-stok th:nth-child(2),#tab-stok td.pn{display:none;} /* Parts Number (tampil di sel deskripsi) */
+    #tab-stok th:nth-child(2),#tab-stok td.pn,             /* Parts Number (tampil di sel deskripsi) */
+    #tab-stok th:nth-child(8),#tab-stok td:nth-child(8){display:none;} /* Keterangan (tampil sebagai NOTE) */
     #tab-stok .m-pn{display:block;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--pn);word-break:break-all;}
     #tab-stok .m-name{display:block;font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;margin:2px 0 0;}
-    #tab-stok .m-note{font-size:10.5px;margin-top:3px;line-height:1.3;}
+    #tab-stok .m-note{display:block;font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.3;}
+    #tab-stok .m-note b{font-weight:700;}
     #tab-stok td.unit-col{color:var(--text-muted);font-size:11px;}
     #tab-stok td.loc,#tab-stok td.loc .hl-loc{font-size:11px;font-weight:600;}
     #tab-stok td.qty{font-size:14px;padding-left:2px;}
