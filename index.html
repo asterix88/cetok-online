@@ -154,9 +154,11 @@
 
   .tx-row{padding:11px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;}
   .tx-row:last-child{border-bottom:none;}
-  .tx-tag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:var(--radius-sm);}
-  .tx-tag.masuk{background:var(--green-dim);color:var(--green);}
-  .tx-tag.keluar{background:var(--red-dim);color:var(--red);}
+  /* Label + qty jadi satu baris polos, tanpa latar (bukan "stabilo") --
+     hanya warna teks yang membedakan Input (hijau) dari Ambil (merah). */
+  .tx-qty{font-family:'Oswald',sans-serif;font-weight:600;font-size:13.5px;white-space:nowrap;}
+  .tx-qty.masuk{color:var(--green);}
+  .tx-qty.keluar{color:var(--red);}
   .tx-meta{font-size:11.5px;color:var(--text-muted);margin-top:4px;display:flex;align-items:center;gap:5px;}
   .tx-meta svg{width:12px;height:12px;flex-shrink:0;opacity:.8;}
   .tx-unit{font-size:10.5px;color:var(--amber);}
@@ -280,12 +282,16 @@
   .pa-body{overflow-y:auto;overscroll-behavior:contain;padding:0 18px 22px;}
   body.pa-lock{overflow:hidden;}
   @media (min-width:681px){
-    .pa-overlay{justify-content:flex-end;align-items:stretch;background:rgba(10,11,13,.35);}
-    .pa-panel{max-width:440px;max-height:none;height:100%;border-radius:0;border-top:none;
-      border-left:1px solid var(--border-strong);transform:translateX(100%);}
+    /* Pop-up di tengah layar, senada dengan modal-card (login dll), bukan
+       lagi panel yang menempel di sisi kanan. */
+    .pa-overlay{justify-content:center;align-items:center;background:rgba(10,11,13,.55);padding:20px;}
+    .pa-panel{max-width:480px;width:100%;max-height:min(88vh,720px);height:auto;
+      border-radius:var(--radius);border:1px solid var(--border-strong);border-left:1px solid var(--border-strong);
+      transform:scale(.96);opacity:0;transition:transform .18s ease,opacity .18s ease;}
+    .pa-overlay.open .pa-panel{transform:scale(1);opacity:1;}
     .pa-grip-zone{display:none;}
-    .pa-panel .pa-head{padding-top:20px;}
-    .pa-body{padding:0 24px 28px;}
+    .pa-panel .pa-head{padding-top:16px;border-radius:var(--radius) var(--radius) 0 0;}
+    .pa-body{padding:0 24px 26px;}
   }
   @media (prefers-reduced-motion:reduce){ .pa-overlay,.pa-panel{transition:none;} }
 
@@ -372,6 +378,45 @@
   .pa-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .pa-warn{border:1px solid var(--red);background:var(--red-dim);padding:12px 14px;border-radius:var(--radius);
     font-size:13px;line-height:1.5;margin-bottom:16px;}
+
+  /* ---------- Menu navigasi jadi drawer di layar lebar ----------
+     Di HP: nav.tabs TETAP baris ikon horizontal seperti semula, tidak disentuh.
+     Di layar >=681px: nav.tabs disembunyikan di luar layar (kiri), dibuka
+     lewat tombol hamburger di header. Judul & angka RFU/NOT RFU tidak berubah. */
+  .nav-toggle{display:none;width:34px;height:34px;flex-shrink:0;align-items:center;justify-content:center;
+    border-radius:var(--radius-sm);background:transparent;border:1px solid var(--border-strong);
+    color:var(--text);cursor:pointer;}
+  .nav-toggle svg{width:19px;height:19px;}
+  .nav-toggle:hover{border-color:var(--text-muted);}
+  .nav-backdrop{display:none;}
+  .nav-drawer-head{display:none;}
+  @media (min-width:681px){
+    .nav-toggle{display:inline-flex;}
+    .nav-backdrop{display:block;position:fixed;inset:0;background:rgba(10,11,13,.45);
+      opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:55;}
+    .nav-backdrop.open{opacity:1;pointer-events:auto;}
+    nav.tabs{position:fixed;top:0;left:0;height:100vh;width:252px;z-index:60;
+      flex-direction:column;align-items:stretch;justify-content:flex-start;overflow-y:auto;
+      background:var(--surface);border-bottom:none;border-right:1px solid var(--border-strong);
+      padding:16px 12px 20px;gap:3px;
+      transform:translateX(-100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);
+      box-shadow:3px 0 20px rgba(0,0,0,.3);}
+    nav.tabs.open{transform:translateX(0);}
+    nav.tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:11px;
+      padding:11px 12px;border-radius:var(--radius-sm);border-bottom:none;
+      font-size:13.5px;color:var(--text-muted);}
+    nav.tabs button svg{width:19px;height:19px;opacity:.85;}
+    nav.tabs button.active{background:var(--surface-2);color:var(--amber);border-bottom-color:transparent;}
+    .nav-drawer-head{display:flex;align-items:center;justify-content:space-between;
+      padding:2px 6px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+    .nav-drawer-head span{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;
+      color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+    .nav-close{width:29px;height:29px;border-radius:50%;background:var(--surface-2);border:none;
+      color:var(--text-muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+      font-size:19px;line-height:1;}
+    .nav-close:hover{background:var(--border);color:var(--text);}
+    @media (prefers-reduced-motion:reduce){ nav.tabs,.nav-backdrop{transition:none;} }
+  }
 </style>
 </head>
 <body>
@@ -383,6 +428,9 @@
     <div class="sub mono">Check - Ambil - Catat</div>
     </div>
     <div class="top-actions">
+      <button id="navToggle" class="nav-toggle" type="button" title="Menu" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navTabs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <button id="themeToggle" class="theme-toggle" type="button" title="Ganti mode tampilan" aria-label="Ganti mode tampilan"></button>
       <button id="adminToggle" class="login-btn" type="button">Login</button>
     </div>
@@ -392,7 +440,9 @@
     <div class="stat stat-clickable" id="statRfuCard" role="button" tabindex="0" title="Lihat daftar parts berstatus RFU"><div class="num" id="statRfu">0</div><div class="lbl">RFU</div></div>
     <div class="stat warn stat-clickable" id="statNotRfuCard" role="button" tabindex="0" title="Lihat daftar parts berstatus NOT RFU"><div class="num" id="statNotRfu">0</div><div class="lbl">NOT RFU</div></div>
   </div>
-  <nav class="tabs">
+  <div class="nav-backdrop" id="navBackdrop"></div>
+  <nav class="tabs" id="navTabs">
+    <div class="nav-drawer-head"><span>Menu</span><button type="button" class="nav-close" id="navClose" aria-label="Tutup menu">&times;</button></div>
     <button data-tab="stok" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>Stok</button>
     <button data-tab="ambil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10"/><path d="m8 7 4-4 4 4"/><path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/></svg>Ambil</button>
     <button data-tab="transfer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>Transfer</button>
@@ -580,6 +630,7 @@ const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICON_BOX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>';
 const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>';
 const ICON_NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6"/></svg>';
+const ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
 const ICON_USER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
 function updateThemeIcon(){
   const btn = document.getElementById('themeToggle');
@@ -602,7 +653,26 @@ function switchTab(tabName){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));
   document.querySelectorAll('main > section').forEach(s=>s.style.display='none');
   document.getElementById('tab-'+tabName).style.display='block';
+  if(window.__closeNavDrawer) window.__closeNavDrawer();
 }
+// ---------- Menu navigasi (drawer) di layar lebar ----------
+// Di HP elemen-elemen ini tidak pernah kelihatan (CSS-nya display:none),
+// jadi listener di bawah aman dipasang untuk semua ukuran layar.
+(function(){
+  const btn = document.getElementById('navToggle');
+  const nav = document.getElementById('navTabs');
+  const backdrop = document.getElementById('navBackdrop');
+  const closeBtn = document.getElementById('navClose');
+  function openDrawer(){ nav.classList.add('open'); backdrop.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  function closeDrawer(){ nav.classList.remove('open'); backdrop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  window.__closeNavDrawer = closeDrawer;
+  btn.addEventListener('click', ()=> nav.classList.contains('open') ? closeDrawer() : openDrawer());
+  backdrop.addEventListener('click', closeDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && nav.classList.contains('open')) closeDrawer(); });
+  window.addEventListener('resize', ()=>{ if(!window.matchMedia('(min-width:681px)').matches) closeDrawer(); });
+})();
+
 try{
   document.querySelectorAll('nav.tabs button').forEach(btn=>{
     btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
@@ -905,7 +975,8 @@ async function loadRiwayatPage(page){
       qty: r.qty,
       note: r.note,
       nama: r.nama,
-      status: r.status
+      status: r.status,
+      loc: r.loc
     }));
     riwayatTotal = data.total || 0;
     riwayatPageCount = Math.max(1, Math.ceil(riwayatTotal / RIWAYAT_PAGE_SIZE));
@@ -1259,14 +1330,14 @@ function renderRiwayat(){
         <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
         <div class="tx-meta mono">${esc(t.pn)}</div>
         <div class="tx-unit">${esc(t.unit)} &nbsp;${statusBadge(t.status)}</div>
+        <div class="tx-meta">${ICON_PIN} ${esc(t.loc || '-')}</div>
         ${t.note ? `<div class="tx-meta">${ICON_NOTE} ${esc(t.note)}</div>` : ''}
         ${t.nama ? `<div class="tx-meta">${ICON_USER} ${esc(t.nama)}</div>` : ''}
         <div class="tx-meta">${new Date(t.ts).toLocaleString('id-ID')}</div>
         ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">Edit</button>` : ''}
       </div>
       <div style="text-align:right;">
-        <span class="tx-tag ${t.type}">${t.type==='masuk'?'Input':'Ambil'}</span>
-        <div style="font-family:'Oswald',sans-serif;font-weight:600;margin-top:4px;">${t.type==='masuk'?'+':'-'}${t.qty}</div>
+        <div class="tx-qty ${t.type}">${t.type==='masuk'?'INPUT':'AMBIL'} : ${t.type==='masuk'?'+':'-'}${t.qty}PCS</div>
       </div>
     </div>`).join('');
 
@@ -1729,7 +1800,7 @@ function paDetailHtml(p){
     </div>
     ${p.remarks ? `<div class="pa-note"><span>Catatan</span>${esc(p.remarks)}</div>` : ''}
     <div class="pa-actions">
-      <button type="button" class="pa-act take" data-pa="go-ambil" ${empty?'disabled':''}><span class="ic">${PA_ICON.take}</span><span><b>Ambil</b><small>Pakai komponen</small></span></button>
+      <button type="button" class="pa-act take" data-pa="go-ambil" ${empty?'disabled':''}><span class="ic">${PA_ICON.take}</span><span><b>Ambil</b><small>Keluarkan untuk dipakai</small></span></button>
       <button type="button" class="pa-act move" data-pa="go-transfer" ${empty?'disabled':''}><span class="ic">${PA_ICON.move}</span><span><b>Transfer</b><small>Pindah lokasi / status</small></span></button>
     </div>
     ${empty ? `<div class="pa-empty">Stok part ini habis. <button type="button" data-pa="to-input">Tambah stok lewat Input</button></div>` : ''}
