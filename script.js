@@ -564,6 +564,15 @@ function hl(text, q){
   }
   return out + esc(t.slice(i));
 }
+// Satu part bisa dapat beberapa parts number sekaligus (mis. beberapa oring
+// jadi satu baris stok). Kalau di-input dipisah koma/titik-koma, tampilkan
+// satu nomor per baris (bukan satu baris panjang) supaya kolom PN tidak ikut
+// melebar dan mendorong kolom lain (Lokasi dst.) keluar layar.
+function fmtPN(pn, q){
+  const parts = String(pn || '').split(/[,;]+/).map(x=>x.trim()).filter(Boolean);
+  if(parts.length <= 1) return hl(pn, q);
+  return parts.map((p,i)=> hl(p, q) + (i < parts.length - 1 ? ';' : '')).join('<br>');
+}
 function renderStokSheet(){
   syncFilterButtons();
   document.querySelectorAll('.sheet-pills button').forEach(b=>b.classList.toggle('active', b.dataset.code===currentSheet));
@@ -599,7 +608,7 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${hl(p.pn, q)}</td><td><span class="m-pn">${hl(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td></tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td></tr>`).join('');
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -707,7 +716,7 @@ function renderRiwayat(){
         ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">Edit</button>` : ''}
       </div>
       <div style="text-align:right;">
-        <div class="tx-qty ${t.type}">${t.type==='masuk'?'INPUT':'AMBIL'} : ${t.type==='masuk'?'':'-'}${t.qty}PCS</div>
+        <div class="tx-qty ${t.type}">${t.type==='masuk'?'INPUT':'AMBIL'} : ${t.type==='masuk'?'':'-'}${t.qty}</div>
       </div>
     </div>`).join('');
 
