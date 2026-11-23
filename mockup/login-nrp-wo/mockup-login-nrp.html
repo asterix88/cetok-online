@@ -263,6 +263,16 @@
     .rlist.cards{display:none;}
     .tbl-wrap{display:block;}
   }
+  .stats2{display:grid;grid-template-columns:1fr 1fr;margin:16px 16px 4px;background:var(--field);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .s2{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px;padding:14px 16px;}
+  .s2 + .s2{border-left:1px solid var(--line);}
+  .s2:hover{background:var(--soft);}
+  .s2-l{flex-basis:100%;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;letter-spacing:.3px;color:var(--muted);}
+  .s2-l i{width:7px;height:7px;border-radius:50%;}
+  .s2-l i.g{background:var(--green);} .s2-l i.r{background:var(--red);}
+  .s2-n{font-family:'Oswald',sans-serif;font-weight:600;font-size:30px;line-height:1;margin-top:8px;color:var(--text);}
+  .s2.w .s2-n{color:var(--red);}
+  .s2-u{font-size:12.5px;color:var(--muted);}
   .formp{padding:20px 16px 32px;}
   .ff{margin-bottom:16px;}
   .ff label{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:7px;}
@@ -377,9 +387,9 @@
         </div>
       </div>
     </header>
-    <div class="stats">
-      <div class="stat"><span class="l">RFU</span><span class="n">142</span></div>
-      <div class="stat w"><span class="l">NOT RFU</span><span class="n">17</span></div>
+    <div class="stats2">
+      <button class="s2"><span class="s2-l"><i class="g"></i>RFU</span><span class="s2-n">142</span><span class="s2-u">part</span></button>
+      <button class="s2 w"><span class="s2-l"><i class="r"></i>NOT RFU</span><span class="s2-n">17</span><span class="s2-u">part</span></button>
     </div>
     <nav class="tabs" id="tabs">
       <span data-tab="stok" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>Stok</span>
