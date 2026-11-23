@@ -370,7 +370,7 @@
   body.cek-sesi .auth-layar,
   body.belum-masuk .app{display:none;}
 
-  /* Layar Masuk & Password baru */
+  /* Layar Masuk & PIN baru */
   .auth-layar{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
   .auth-layar[hidden]{display:none;}
   .auth-kartu{width:100%;max-width:360px;}
@@ -388,7 +388,7 @@
   .auth-siapa b{display:block;font-size:13.5px;font-weight:600;}
   .auth-siapa span.mono{display:block;font-size:11.5px;color:var(--text-muted);}
 
-  /* Lingkaran inisial (header, menu, layar password baru) */
+  /* Lingkaran inisial (header, menu, layar PIN baru) */
   .akun-inisial{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;flex-shrink:0;
     background:var(--amber-dim);color:var(--amber);font:600 12px 'Inter',sans-serif;letter-spacing:.3px;}
 
@@ -412,3 +412,6 @@
 
   /* Kolom nama yang terisi otomatis dari akun login */
   input.nama-login{background:var(--surface-2);color:var(--text-muted);cursor:default;}
+
+  /* Kolom PIN: angka dibuat renggang supaya mudah dihitung */
+  input.pin{letter-spacing:6px;}

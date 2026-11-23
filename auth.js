@@ -3,8 +3,8 @@
 //
 // Alur singkat:
 //   1. Halaman dibuka  -> cek sesi login yang tersimpan (mulaiAuth)
-//   2. Belum login     -> layar "Masuk" (NRP + password)
-//   3. Password masih 0000 -> layar "Password baru" (wajib ganti)
+//   2. Belum login     -> layar "Masuk" (NRP + PIN 4 angka)
+//   3. PIN masih 0000  -> layar "PIN baru" (wajib ganti)
 //   4. Sudah login     -> aplikasi dibuka, nama otomatis terisi & terkunci
 //   5. Tidak ada aktivitas 12 jam (admin 4 jam) -> keluar otomatis, tanpa
 //      peringatan
@@ -20,12 +20,14 @@
 // Akun di Supabase memakai email buatan: <NRP>@cetok.local
 const EMAIL_DOMAIN = '@cetok.local';
 
-// Supabase mewajibkan password minimal 6 karakter. Karyawan mengetik
-// password pendek (mis. 0000), web menambahkan awalan ini sebelum dikirim.
+// Karyawan masuk dengan PIN 4 angka. Supabase mewajibkan password minimal
+// 6 karakter, jadi web menambahkan awalan ini sebelum dikirim
+// (PIN 1234 -> password 'cetok-1234').
 // HARUS sama dengan awalan di sql/01-login-nrp.sql ('cetok-0000').
-const PASSWORD_PREFIX = 'cetok-';
-const PASSWORD_AWAL = '0000';
-const PASSWORD_MIN = 4;
+const PIN_PREFIX = 'cetok-';
+const PIN_AWAL = '0000';
+const PIN_PANJANG = 4;
+const POLA_PIN = /^[0-9]{4}$/;   // tepat 4 angka
 
 // Batas tidak aktif sebelum keluar otomatis
 const BATAS_DIAM_KARYAWAN_JAM = 12;
@@ -41,7 +43,7 @@ const JAM_MS = 60 * 60 * 1000;
 
 // ---- Data karyawan yang sedang login ----------------------------------
 
-// Isi: { nrp, nama, admin (true/false), wajib_ganti_password }
+// Isi: { nrp, nama, admin (true/false), wajib_ganti_pin }
 let karyawanLogin = null;
 let dataSudahDimuat = false;
 
@@ -60,39 +62,39 @@ function inisial(nama){
 // ---- Pindah layar -----------------------------------------------------
 
 const elLayarMasuk = document.getElementById('layarMasuk');
-const elLayarPasswordBaru = document.getElementById('layarPasswordBaru');
+const elLayarPinBaru = document.getElementById('layarPinBaru');
 
 function tampilkanLayarMasuk(pesan){
   document.body.classList.remove('cek-sesi');
   document.body.classList.add('belum-masuk');
-  elLayarPasswordBaru.hidden = true;
+  elLayarPinBaru.hidden = true;
   elLayarMasuk.hidden = false;
-  document.getElementById('masuk_password').value = '';
+  document.getElementById('masuk_pin').value = '';
   document.getElementById('masukError').textContent = pesan || '';
   document.getElementById('masuk_nrp').focus();
 }
 
-// wajib = true  -> password awal, tidak bisa dibatalkan
-// wajib = false -> dibuka dari menu "Ganti password", ada tombol Batal
-function tampilkanLayarPasswordBaru(wajib){
+// wajib = true  -> PIN awal 0000, tidak bisa dibatalkan
+// wajib = false -> dibuka dari menu "Ganti PIN", ada tombol Batal
+function tampilkanLayarPinBaru(wajib){
   document.body.classList.remove('cek-sesi');
   document.body.classList.add('belum-masuk');
   elLayarMasuk.hidden = true;
-  elLayarPasswordBaru.hidden = false;
+  elLayarPinBaru.hidden = false;
   document.getElementById('pbInisial').textContent = inisial(karyawanLogin.nama);
   document.getElementById('pbNama').textContent = karyawanLogin.nama;
   document.getElementById('pbNrp').textContent = karyawanLogin.nrp;
-  document.getElementById('pb_password').value = '';
+  document.getElementById('pb_pin').value = '';
   document.getElementById('pb_ulangi').value = '';
   document.getElementById('pbError').textContent = '';
-  document.getElementById('btnBatalPassword').hidden = wajib;
-  document.getElementById('pb_password').focus();
+  document.getElementById('btnBatalPin').hidden = wajib;
+  document.getElementById('pb_pin').focus();
 }
 
 function bukaAplikasi(){
   document.body.classList.remove('cek-sesi', 'belum-masuk');
   elLayarMasuk.hidden = true;
-  elLayarPasswordBaru.hidden = true;
+  elLayarPinBaru.hidden = true;
 
   isAdmin = karyawanLogin.admin;
   isiNamaOtomatis();
@@ -110,12 +112,12 @@ function bukaAplikasi(){
 
 // ---- Masuk ------------------------------------------------------------
 
-async function masuk(nrp, password){
+async function masuk(nrp, pin){
   const { error } = await sb.auth.signInWithPassword({
     email: nrp + EMAIL_DOMAIN,
-    password: PASSWORD_PREFIX + password
+    password: PIN_PREFIX + pin
   });
-  if(error) throw new Error('NRP atau password salah.');
+  if(error) throw new Error('NRP atau PIN salah.');
 
   const profil = await ambilProfil();
   if(!profil){
@@ -135,8 +137,8 @@ async function ambilProfil(){
 }
 
 function lanjutSetelahMasuk(){
-  if(karyawanLogin.wajib_ganti_password){
-    tampilkanLayarPasswordBaru(true);
+  if(karyawanLogin.wajib_ganti_pin){
+    tampilkanLayarPinBaru(true);
   } else {
     bukaAplikasi();
   }
@@ -145,17 +147,17 @@ function lanjutSetelahMasuk(){
 document.getElementById('formMasuk').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const nrp = document.getElementById('masuk_nrp').value.trim();
-  const password = document.getElementById('masuk_password').value;
+  const pin = document.getElementById('masuk_pin').value;
   const errEl = document.getElementById('masukError');
   const btn = document.getElementById('btnMasuk');
 
   if(!/^[0-9]+$/.test(nrp)){ errEl.textContent = 'NRP hanya berisi angka.'; return; }
-  if(!password){ errEl.textContent = 'Password wajib diisi.'; return; }
+  if(!POLA_PIN.test(pin)){ errEl.textContent = 'PIN berisi 4 angka.'; return; }
 
   errEl.textContent = '';
   btn.disabled = true; btn.textContent = 'Masuk...';
   try{
-    await masuk(nrp, password);
+    await masuk(nrp, pin);
   }catch(err){
     errEl.textContent = err.message;
   }finally{
@@ -163,51 +165,50 @@ document.getElementById('formMasuk').addEventListener('submit', async (e)=>{
   }
 });
 
-document.getElementById('btnLupaPassword').addEventListener('click', ()=>{
-  document.getElementById('masukError').textContent = 'Minta admin untuk reset password.';
+document.getElementById('btnLupaPin').addEventListener('click', ()=>{
+  document.getElementById('masukError').textContent = 'Minta admin untuk reset PIN.';
 });
 
 
-// ---- Password baru ----------------------------------------------------
+// ---- PIN baru ---------------------------------------------------------
 
-// Mengembalikan pesan kesalahan, atau '' kalau password boleh dipakai
-function cekPasswordBaru(pw, ulangi){
-  if(pw.length < PASSWORD_MIN) return `Password minimal ${PASSWORD_MIN} karakter.`;
-  if(pw === PASSWORD_AWAL) return 'Password tidak boleh ' + PASSWORD_AWAL + '.';
-  if(pw === karyawanLogin.nrp) return 'Password tidak boleh sama dengan NRP.';
-  if(pw !== ulangi) return 'Ulangi password belum sama.';
+// Mengembalikan pesan kesalahan, atau '' kalau PIN boleh dipakai
+function cekPinBaru(pin, ulangi){
+  if(!POLA_PIN.test(pin)) return `PIN harus ${PIN_PANJANG} angka.`;
+  if(pin === PIN_AWAL) return 'PIN tidak boleh ' + PIN_AWAL + '.';
+  if(pin !== ulangi) return 'Ulangi PIN belum sama.';
   return '';
 }
 
-document.getElementById('formPasswordBaru').addEventListener('submit', async (e)=>{
+document.getElementById('formPinBaru').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const pw = document.getElementById('pb_password').value;
+  const pin = document.getElementById('pb_pin').value;
   const ulangi = document.getElementById('pb_ulangi').value;
   const errEl = document.getElementById('pbError');
-  const btn = document.getElementById('btnSimpanPassword');
+  const btn = document.getElementById('btnSimpanPin');
 
-  const salah = cekPasswordBaru(pw, ulangi);
+  const salah = cekPinBaru(pin, ulangi);
   if(salah){ errEl.textContent = salah; return; }
 
   errEl.textContent = '';
   btn.disabled = true; btn.textContent = 'Menyimpan...';
   try{
-    const { error } = await sb.auth.updateUser({ password: PASSWORD_PREFIX + pw });
+    const { error } = await sb.auth.updateUser({ password: PIN_PREFIX + pin });
     if(error) throw error;
-    const { error: errTandai } = await sb.rpc('selesai_ganti_password');
+    const { error: errTandai } = await sb.rpc('selesai_ganti_pin');
     if(errTandai) throw errTandai;
 
-    karyawanLogin.wajib_ganti_password = false;
-    toast('Password tersimpan');
+    karyawanLogin.wajib_ganti_pin = false;
+    toast('PIN tersimpan');
     bukaAplikasi();
   }catch(err){
-    errEl.textContent = 'Gagal menyimpan password: ' + (err.message || err);
+    errEl.textContent = 'Gagal menyimpan PIN: ' + (err.message || err);
   }finally{
     btn.disabled = false; btn.textContent = 'Simpan';
   }
 });
 
-document.getElementById('btnBatalPassword').addEventListener('click', bukaAplikasi);
+document.getElementById('btnBatalPin').addEventListener('click', bukaAplikasi);
 
 
 // ---- Keluar -----------------------------------------------------------
@@ -269,9 +270,9 @@ document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape') tutupMenuAkun();
 });
 
-document.getElementById('btnGantiPassword').addEventListener('click', ()=>{
+document.getElementById('btnGantiPin').addEventListener('click', ()=>{
   tutupMenuAkun();
-  tampilkanLayarPasswordBaru(false);
+  tampilkanLayarPinBaru(false);
 });
 document.getElementById('btnKeluar').addEventListener('click', ()=> keluar());
 

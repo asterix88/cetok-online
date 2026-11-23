@@ -16,11 +16,11 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 ## Kelola akun sehari-hari (SQL Editor)
 
 ```sql
--- tambah karyawan baru (password awal 0000, wajib ganti saat masuk)
+-- tambah karyawan baru (PIN awal 0000, wajib ganti saat masuk)
 select public.buat_akun_karyawan('12345678', 'NAMA LENGKAP', null, 'PLANT', 'MEKANIK');
 
--- lupa password -> kembali ke 0000
-select public.reset_password_karyawan('12345678');
+-- lupa PIN -> kembali ke 0000
+select public.reset_pin_karyawan('12345678');
 
 -- jadikan admin / cabut admin
 update public.karyawan set admin = 'ya' where nrp = '12345678';

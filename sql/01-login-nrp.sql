@@ -7,17 +7,17 @@
 --
 -- Isi file ini:
 --   1. Tabel karyawan
---   2. Fungsi bantu: is_admin, profil_saya, selesai_ganti_password
+--   2. Fungsi bantu: is_admin, profil_saya, selesai_ganti_pin
 --   3. Fungsi kelola akun (dipakai dari SQL Editor):
---        buat_akun_karyawan, reset_password_karyawan
+--        buat_akun_karyawan, reset_pin_karyawan
 --   4. Fungsi admin lama (update_part, delete_part, update_riwayat)
 --      sekarang hanya boleh dipakai karyawan dengan admin = 'ya'
 --
--- Catatan password:
---   Supabase mewajibkan password minimal 6 karakter, sedangkan password
---   awal kita 0000 (4 karakter). Jadi web menambahkan awalan "cetok-"
---   sebelum dikirim ke Supabase (0000 -> cetok-0000). Karyawan tetap
---   mengetik 0000. Awalan yang sama dipakai di auth.js (PASSWORD_PREFIX)
+-- Catatan PIN:
+--   Karyawan masuk dengan PIN 4 angka (awal 0000). Supabase mewajibkan
+--   password minimal 6 karakter, jadi web menambahkan awalan "cetok-"
+--   sebelum dikirim ke Supabase (PIN 0000 -> password cetok-0000).
+--   Karyawan tetap mengetik 4 angka saja. Awalan yang sama dipakai di auth.js (PIN_PREFIX)
 --   dan di fungsi buat/reset di bawah. Kalau diganti, ganti di keduanya.
 --
 -- WA bot v2 TIDAK terpengaruh: fungsi input_barang, ambil_barang,
@@ -33,7 +33,7 @@
 --   nama                 : otomatis mengisi kolom nama di Ambil/Transfer/Input
 --   admin                : isi 'ya' kalau admin, selain itu kosongkan
 --   departemen, jabatan  : info saja (tidak dipakai untuk hak akses)
---   wajib_ganti_password : true = harus ganti password saat masuk berikutnya
+--   wajib_ganti_pin      : true = harus ganti PIN saat masuk berikutnya
 --   aktif                : false = tidak bisa masuk lagi (tanpa hapus data)
 --   user_id              : akun login di Supabase Auth (diisi otomatis)
 create table if not exists public.karyawan (
@@ -42,7 +42,7 @@ create table if not exists public.karyawan (
   admin                text,
   departemen           text,
   jabatan              text,
-  wajib_ganti_password boolean not null default true,
+  wajib_ganti_pin      boolean not null default true,
   aktif                boolean not null default true,
   user_id              uuid unique references auth.users (id) on delete set null,
   created_at           timestamptz not null default now()
@@ -86,20 +86,20 @@ as $$
     'nrp',                  nrp,
     'nama',                 nama,
     'admin',                lower(trim(coalesce(admin, ''))) = 'ya',
-    'wajib_ganti_password', wajib_ganti_password
+    'wajib_ganti_pin', wajib_ganti_pin
   )
   from karyawan
   where user_id = auth.uid() and aktif;
 $$;
 
--- Dipanggil web setelah karyawan berhasil mengganti password awal.
-create or replace function public.selesai_ganti_password()
+-- Dipanggil web setelah karyawan berhasil mengganti PIN awal.
+create or replace function public.selesai_ganti_pin()
 returns void
 language sql
 security definer
 set search_path = public
 as $$
-  update karyawan set wajib_ganti_password = false where user_id = auth.uid();
+  update karyawan set wajib_ganti_pin = false where user_id = auth.uid();
 $$;
 
 
@@ -109,11 +109,11 @@ $$;
 -- Contoh pemakaian:
 --   select public.buat_akun_karyawan('12345678', 'BUDI SANTOSO', 'ya', 'PLANT', 'PLANNER');  -- admin
 --   select public.buat_akun_karyawan('10458821', 'AGUS RIYADI', null, 'PLANT', 'MEKANIK');   -- karyawan
---   select public.reset_password_karyawan('10458821');                   -- lupa password
+--   select public.reset_pin_karyawan('10458821');                   -- lupa PIN
 --   update public.karyawan set aktif = false where nrp = '10458821';     -- nonaktifkan
 --   update public.karyawan set admin = 'ya'  where nrp = '10458821';     -- jadikan admin
 
--- Buat akun login baru dengan password awal 0000.
+-- Buat akun login baru dengan PIN awal 0000.
 create or replace function public.buat_akun_karyawan(
   p_nrp   text,
   p_nama       text,
@@ -173,8 +173,8 @@ begin
 end;
 $$;
 
--- Kembalikan password ke 0000 dan wajibkan ganti saat masuk berikutnya.
-create or replace function public.reset_password_karyawan(p_nrp text)
+-- Kembalikan PIN ke 0000 dan wajibkan ganti saat masuk berikutnya.
+create or replace function public.reset_pin_karyawan(p_nrp text)
 returns void
 language plpgsql
 security definer
@@ -197,7 +197,7 @@ begin
       updated_at = now()
   where id = v_user_id;
 
-  update karyawan set wajib_ganti_password = true where nrp = trim(p_nrp);
+  update karyawan set wajib_ganti_pin = true where nrp = trim(p_nrp);
 end;
 $$;
 
@@ -322,15 +322,15 @@ $$;
 revoke execute on function
   public.is_admin(),
   public.profil_saya(),
-  public.selesai_ganti_password(),
+  public.selesai_ganti_pin(),
   public.buat_akun_karyawan(text, text, text, text, text),
-  public.reset_password_karyawan(text)
+  public.reset_pin_karyawan(text)
 from public, anon;
 
 grant execute on function
   public.is_admin(),
   public.profil_saya(),
-  public.selesai_ganti_password(),
+  public.selesai_ganti_pin(),
   public.buat_akun_karyawan(text, text, text, text, text),
-  public.reset_password_karyawan(text)
+  public.reset_pin_karyawan(text)
 to authenticated;

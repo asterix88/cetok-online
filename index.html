@@ -27,24 +27,24 @@
     <h2>Masuk</h2>
     <div class="field"><label for="masuk_nrp">NRP</label><input id="masuk_nrp" class="mono" inputmode="numeric" autocomplete="username"></div>
     <div class="field">
-      <div class="auth-label-row"><label for="masuk_password">Password</label><button type="button" class="auth-link" id="btnLupaPassword">Lupa password?</button></div>
-      <input id="masuk_password" type="password" class="mono" autocomplete="current-password">
+      <div class="auth-label-row"><label for="masuk_pin">PIN</label><button type="button" class="auth-link" id="btnLupaPin">Lupa PIN?</button></div>
+      <input id="masuk_pin" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="current-password">
     </div>
     <div class="auth-error" id="masukError" role="alert"></div>
     <button type="submit" class="btn btn-amber btn-block" id="btnMasuk">Masuk</button>
   </form>
 </div>
 
-<div id="layarPasswordBaru" class="auth-layar" hidden>
-  <form class="auth-kartu" id="formPasswordBaru" novalidate>
+<div id="layarPinBaru" class="auth-layar" hidden>
+  <form class="auth-kartu" id="formPinBaru" novalidate>
     <div class="auth-brand"><img class="auth-logo" alt=""><div><b>Stock Component TRACK</b><small>AMM-SBS</small></div></div>
-    <h2>Password baru</h2>
+    <h2>PIN baru</h2>
     <div class="auth-siapa"><span class="akun-inisial" id="pbInisial"></span><div><b id="pbNama"></b><span class="mono" id="pbNrp"></span></div></div>
-    <div class="field"><label for="pb_password">Password baru</label><input id="pb_password" type="password" class="mono" autocomplete="new-password"></div>
-    <div class="field"><label for="pb_ulangi">Ulangi password</label><input id="pb_ulangi" type="password" class="mono" autocomplete="new-password"></div>
+    <div class="field"><label for="pb_pin">PIN baru</label><input id="pb_pin" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>
+    <div class="field"><label for="pb_ulangi">Ulangi PIN</label><input id="pb_ulangi" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>
     <div class="auth-error" id="pbError" role="alert"></div>
-    <button type="submit" class="btn btn-amber btn-block" id="btnSimpanPassword">Simpan</button>
-    <button type="button" class="btn btn-outline btn-block auth-batal" id="btnBatalPassword" hidden>Batal</button>
+    <button type="submit" class="btn btn-amber btn-block" id="btnSimpanPin">Simpan</button>
+    <button type="button" class="btn btn-outline btn-block auth-batal" id="btnBatalPin" hidden>Batal</button>
   </form>
 </div>
 
@@ -61,7 +61,7 @@
         <button id="akunBtn" class="akun-btn" type="button" aria-haspopup="true" aria-expanded="false"><span class="akun-inisial" id="akunInisial"></span></button>
         <div id="akunMenu" class="akun-menu" hidden>
           <div class="akun-id"><span class="akun-inisial" id="akunMenuInisial"></span><div><b id="akunNama"></b><span class="mono" id="akunNrp"></span></div><em id="akunAdmin" hidden>Admin</em></div>
-          <button type="button" id="btnGantiPassword">Ganti password</button>
+          <button type="button" id="btnGantiPin">Ganti PIN</button>
           <button type="button" id="btnKeluar" class="keluar">Keluar</button>
         </div>
       </div>
