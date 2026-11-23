@@ -206,110 +206,34 @@ $$;
 -- 4. FUNGSI ADMIN: sekarang cek kolom admin, bukan sekadar "sudah login"
 -- ---------------------------------------------------------------------
 -- Sebelumnya cukup login (akun admin bersama). Sekarang semua karyawan
--- login, jadi fungsi ini harus memeriksa admin = 'ya'.
--- Isi fungsi selain baris pengecekan admin SAMA dengan versi sebelumnya.
-
-create or replace function public.update_part(
-  p_id      uuid,
-  p_unit    text,
-  p_pn      text,
-  p_desc    text,
-  p_loc     text,
-  p_qty     integer,
-  p_status  text,
-  p_remarks text
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
+-- login, jadi update_part, delete_part dan update_riwayat harus memeriksa
+-- admin = 'ya'.
+--
+-- Supaya isi fungsi yang sudah ada di database TIDAK berubah sama sekali,
+-- blok ini mengambil definisi fungsi yang sekarang, lalu hanya mengganti
+-- satu baris pengecekan:
+--     if auth.uid() is null then      ->  if not public.is_admin() then
+-- Kalau baris itu tidak ditemukan, proses dihentikan supaya bisa dicek manual.
+do $$
 declare
-  v_status text;
+  v_nama  text;
+  v_def   text;
 begin
-  if not public.is_admin() then
-    raise exception 'Unauthorized: fitur ini khusus admin';
-  end if;
-  if p_unit is null or trim(p_unit) = '' then
-    raise exception 'Unit model wajib diisi';
-  end if;
-  if p_pn is null or trim(p_pn) = '' or p_desc is null or trim(p_desc) = '' then
-    raise exception 'Parts Number dan Description wajib diisi';
-  end if;
-  if p_qty is null or p_qty < 0 then
-    raise exception 'Quantity tidak boleh minus';
-  end if;
-
-  v_status := case when p_qty = 0 then null
-                   else coalesce(nullif(upper(trim(p_status)), ''), 'RFU') end;
-
-  update stok
-  set unit_model        = trim(p_unit),
-      parts_number      = upper(trim(p_pn)),
-      parts_description = upper(trim(p_desc)),
-      lokasi            = upper(nullif(trim(p_loc), '')),
-      quantity          = p_qty,
-      status_rfu        = v_status,
-      remarks           = upper(nullif(trim(p_remarks), '')),
-      updated_at        = now()
-  where id = p_id;
-
-  if not found then
-    raise exception 'Part tidak ditemukan';
-  end if;
-exception
-  when unique_violation then
-    raise exception 'Sudah ada part yang sama di lokasi dan status ini. Pakai Transfer atau gabungkan qty-nya.';
-end;
-$$;
-
-create or replace function public.delete_part(p_id uuid)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not public.is_admin() then
-    raise exception 'Unauthorized: fitur ini khusus admin';
-  end if;
-
-  delete from stok where id = p_id;
-end;
-$$;
-
-create or replace function public.update_riwayat(
-  p_id                uuid,
-  p_unit_model        text,
-  p_parts_number      text,
-  p_parts_description text,
-  p_keterangan        text,
-  p_nama              text
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not public.is_admin() then
-    raise exception 'Unauthorized: fitur ini khusus admin';
-  end if;
-  if p_nama is null or trim(p_nama) = '' then
-    raise exception 'Nama wajib diisi';
-  end if;
-
-  update riwayat
-  set unit_model        = coalesce(nullif(trim(p_unit_model), ''), unit_model),
-      parts_number      = coalesce(upper(nullif(trim(p_parts_number), '')), parts_number),
-      parts_description = coalesce(upper(nullif(trim(p_parts_description), '')), parts_description),
-      keterangan        = upper(coalesce(trim(p_keterangan), '')),
-      nama              = trim(p_nama)
-  where id = p_id;
-
-  if not found then
-    raise exception 'Riwayat tidak ditemukan';
-  end if;
+  foreach v_nama in array array['update_part', 'delete_part', 'update_riwayat'] loop
+    for v_def in
+      select pg_get_functiondef(p.oid)
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = v_nama
+    loop
+      if position('auth.uid() is null' in v_def) > 0 then
+        execute replace(v_def, 'auth.uid() is null', 'not public.is_admin()');
+      elsif position('public.is_admin()' in v_def) = 0 then
+        raise exception 'Fungsi % tidak punya pengecekan login yang dikenali. Cek manual.', v_nama;
+      end if;
+      -- kalau sudah berisi public.is_admin(), berarti sudah diubah sebelumnya
+    end loop;
+  end loop;
 end;
 $$;
 
