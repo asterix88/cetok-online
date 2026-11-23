@@ -84,11 +84,9 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 // lagi -- supaya tidak ada lagi risiko lupa "kembalikan" setelah presentasi.
 const SHOW_HIDDEN = window.location.hostname.includes('stock-spareparts');
 
-// --- Login Admin (satu akun bersama, dibuat manual di Supabase Dashboard >
-// Authentication > Users). Emailnya tidak rahasia (bukan password), jadi aman
-// ditulis di sini -- yang menjaga keamanan tetap password + aturan RLS di database.
-// GANTI email ini sesuai akun admin yang kamu buat di Supabase Dashboard.
-const ADMIN_EMAIL = 'admin@cetok.local';
+// --- Status admin ---
+// Diisi oleh auth.js setelah karyawan login (kolom admin = 'ya' di tabel
+// karyawan). Dipakai untuk menampilkan tombol Edit/Hapus.
 let isAdmin = false;
 
 // Animasi pop-up: 'display' diubah dulu, baru class 'open' ditambahkan
@@ -111,55 +109,13 @@ function closeModal(id){
   if(errEl) errEl.textContent = '';
 }
 
+// Gambar ulang bagian yang tergantung status admin. Dipanggil auth.js
+// setiap kali karyawan masuk atau keluar.
 function updateAdminUI(){
-  const btn = document.getElementById('adminToggle');
-  btn.textContent = isAdmin ? 'Logout' : 'Login';
-  btn.classList.toggle('on', isAdmin);
-  btn.title = isAdmin ? 'Keluar dari mode admin' : 'Login admin';
   if(typeof paState !== 'undefined' && paState.open && paState.view === 'detail') paRender();
   renderStokSheet();
   renderRiwayat();
 }
-
-document.getElementById('adminToggle').addEventListener('click', ()=>{
-  if(isAdmin){
-    openModal('logoutConfirmModal');
-  } else {
-    document.getElementById('login_password').value = '';
-    document.getElementById('loginError').textContent = '';
-    openModal('loginModal');
-  }
-});
-document.getElementById('login_password').addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter'){ e.preventDefault(); doAdminLogin(); }
-});
-
-async function doAdminLogin(){
-  const password = document.getElementById('login_password').value;
-  const errEl = document.getElementById('loginError');
-  const btn = document.getElementById('btnDoLogin');
-  if(!password){ errEl.textContent = 'Password wajib diisi.'; return; }
-  btn.disabled = true; btn.textContent = 'Login...';
-  try{
-    const { error } = await sb.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
-    if(error) throw error;
-    closeModal('loginModal');
-    toast('Login admin berhasil');
-  }catch(e){
-    errEl.textContent = 'Password salah atau akun admin belum dibuat di Supabase.';
-  }finally{
-    btn.disabled = false; btn.textContent = 'Login';
-  }
-}
-
-// Pantau status login -- dipanggil otomatis oleh supabase-js saat sesi
-// berubah (login, logout, atau sesi lama dari localStorage ditemukan saat
-// halaman baru dibuka).
-sb.auth.onAuthStateChange((event, session)=>{
-  isAdmin = !!session;
-  updateAdminUI();
-  if(event === 'SIGNED_OUT') toast('Sudah keluar dari mode admin');
-});
 
 let parts = [];
 let transactions = [];
@@ -292,14 +248,6 @@ function init(){
   try{
     buildSelectors();
   }catch(e){ showFatalError('Gagal buildSelectors: ' + e.message); }
-  try{
-    const savedNama = localStorage.getItem('stok_nama_terakhir');
-    if(savedNama){
-      document.getElementById('in_nama').value = savedNama;
-      document.getElementById('ax_nama').value = savedNama;
-      document.getElementById('tf_nama').value = savedNama;
-    }
-  }catch(e){ /* localStorage tidak tersedia, abaikan */ }
   loadData();
 }
 
@@ -755,7 +703,6 @@ async function inputBarang(){
     parts = data.parts; transactions = data.transactions;
     toast(`Input tersimpan untuk ${pn} di ${unit} (${status})`);
     document.getElementById('in_pn').value=''; document.getElementById('in_desc').value=''; document.getElementById('in_loc').value=''; document.getElementById('in_qty').value=''; document.getElementById('in_status').value='RFU'; document.getElementById('in_remarks').value='';
-    try{ localStorage.setItem('stok_nama_terakhir', nama); }catch(e){}
     currentSheet = unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
   btn.textContent='Simpan Input Barang';
@@ -841,7 +788,6 @@ async function ambilBarang(){
     toast(`Ambil barang tersimpan untuk ${part.pn}`);
     document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value='';
     document.getElementById('ax_found').innerHTML=''; ambilSelectedPartId=null;
-    try{ localStorage.setItem('stok_nama_terakhir', nama); }catch(e){}
     currentSheet = part.unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
   btn.textContent='Simpan Ambil Barang';
@@ -903,7 +849,6 @@ async function transferBarang(){
     toast(`${qty} pcs ${part.pn} dipindah ke ${destLoc} (${destStatus})`);
     document.getElementById('tf_pn').value=''; document.getElementById('tf_qty').value=''; document.getElementById('tf_loc').value=''; document.getElementById('tf_note').value='';
     document.getElementById('tf_found').innerHTML=''; tfSelectedPartId=null;
-    try{ localStorage.setItem('stok_nama_terakhir', nama); }catch(e){}
     currentSheet = part.unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
   btn.textContent='Simpan Transfer';
@@ -934,9 +879,10 @@ function isTransferFormReady(){
   const nama = document.getElementById('tf_nama').value.trim();
   return !!tfSelectedPartId && qty > 0 && !!destLoc && !!nama;
 }
-const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_loc','in_qty','in_remarks','in_nama'];
-const AMBIL_FIELD_ORDER = ['ax_pn','ax_qty','ax_note','ax_nama'];
-const TRANSFER_FIELD_ORDER = ['tf_pn','tf_qty','tf_loc','tf_status','tf_note','tf_nama'];
+// Kolom nama tidak ikut urutan Enter karena terisi otomatis dari akun login.
+const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_loc','in_qty','in_remarks'];
+const AMBIL_FIELD_ORDER = ['ax_pn','ax_qty','ax_note'];
+const TRANSFER_FIELD_ORDER = ['tf_pn','tf_qty','tf_loc','tf_status','tf_note'];
 
 function setupEnterNavigation(order, isReadyFn, submitFn){
   order.forEach((id, idx)=>{
@@ -1077,8 +1023,6 @@ const PA_ICON = {
 };
 
 function paPart(){ return parts.find(p=>String(p.id)===String(paState.id)); }
-function paSavedName(){ try{ return localStorage.getItem('stok_nama_terakhir') || ''; }catch(e){ return ''; } }
-function paSaveName(n){ try{ localStorage.setItem('stok_nama_terakhir', n); }catch(e){} }
 function paStatusClass(st){ const s=(st||'').toUpperCase(); return s==='RFU' ? 's-rfu' : s==='NOT RFU' ? 's-not' : ''; }
 
 function markSelectedRow(){
@@ -1203,7 +1147,7 @@ function paStepperHtml(max){
 function paAmbilHtml(p){
   return paContextHtml(p) + paStepperHtml(p.qty) + `
     <div class="field"><label for="pa_note">Keperluan</label><input id="pa_note" class="mono" placeholder="cth: Perbaikan unit E5138" autocomplete="off"></div>
-    <div class="field"><label for="pa_nama">Nama pengambil</label><input id="pa_nama" class="mono" placeholder="Nama kamu" value="${esc(paSavedName())}"></div>
+    <div class="field"><label for="pa_nama">Nama pengambil</label><input id="pa_nama" class="mono nama-login" value="${esc(namaLogin())}" readonly tabindex="-1"></div>
     <div class="pa-err" id="pa_err" role="alert"></div>
     <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-ambil" disabled>Ambil</button>`;
 }
@@ -1226,7 +1170,7 @@ function paTransferHtml(p){
       </div>
     </div>
     <div class="field"><label for="pa_note">Keterangan <span class="pa-opt">(opsional)</span></label><input id="pa_note" class="mono" placeholder="cth: Kirim ke vendor untuk perbaikan" autocomplete="off"></div>
-    <div class="field"><label for="pa_nama">Nama</label><input id="pa_nama" class="mono" placeholder="Nama kamu" value="${esc(paSavedName())}"></div>
+    <div class="field"><label for="pa_nama">Nama</label><input id="pa_nama" class="mono nama-login" value="${esc(namaLogin())}" readonly tabindex="-1"></div>
     <div class="pa-err" id="pa_err" role="alert"></div>
     <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-transfer" disabled>Pindahkan</button>`;
 }
@@ -1366,13 +1310,11 @@ async function paSubmit(kind){
     if(kind === 'ambil'){
       const q = paQty(), nama = val('pa_nama');
       data = await runScript('ambilBarang', p.id, q, val('pa_note'), nama);
-      paSaveName(nama);
       msg = `Ambil ${q} pcs ${p.pn} tersimpan`;
     } else if(kind === 'transfer'){
       const q = paQty(), nama = val('pa_nama'), loc = val('pa_loc');
       const st = document.querySelector('input[name="pa_status"]:checked')?.value || 'RFU';
       data = await runScript('transferStok', p.id, q, loc, st, val('pa_note'), nama);
-      paSaveName(nama);
       msg = `${q} pcs ${p.pn} dipindah ke ${loc.toUpperCase()} (${st})`;
     } else if(kind === 'edit'){
       const pn = val('pa_pn'), desc = val('pa_desc'), qty = Number(val('pa_eqty'));
@@ -1470,4 +1412,5 @@ function paOnDataChanged(){
   }
 }
 
-init();
+// init() TIDAK dipanggil di sini. Data baru dimuat setelah karyawan
+// berhasil masuk -- lihat bukaAplikasi() di auth.js.

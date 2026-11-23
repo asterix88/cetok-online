@@ -359,3 +359,107 @@
   .pa-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .pa-warn{border:1px solid var(--red);background:var(--red-dim);padding:12px 14px;border-radius:var(--radius);
     font-size:13px;line-height:1.5;margin-bottom:16px;}
+
+  /* =====================================================================
+     LOGIN NRP (auth.js)
+     ===================================================================== */
+
+  /* Saat halaman baru dibuka: sembunyikan semua sampai sesi selesai dicek,
+     supaya tidak berkedip antara layar Masuk dan aplikasi. */
+  body.cek-sesi .app,
+  body.cek-sesi .auth,
+  body.belum-masuk .app{display:none;}
+
+  /* ---- Layar login: HP = form saja, desktop = panel merek kiri + form ---- */
+  /* Font sama dengan mockup: Oswald (judul), Inter (teks & PIN), JetBrains Mono (NRP) */
+  .auth{min-height:100vh;display:grid;grid-template-columns:1fr;-webkit-font-smoothing:antialiased;}
+  .auth[hidden]{display:none;}
+  .auth-aside{display:none;}
+  .auth-main{display:flex;flex-direction:column;min-height:100vh;padding:56px 24px 24px;}
+  .auth-brand,.auth-form,.auth-kaki-hp{width:100%;max-width:360px;margin-left:auto;margin-right:auto;}
+  .auth-form[hidden]{display:none;}
+
+  .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:56px;}
+  .auth-brand img{height:42px;width:auto;border-radius:6px;}
+  .auth-brand b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;letter-spacing:.5px;line-height:1.15;}
+  .auth-brand small{display:block;font-size:12px;color:var(--text-muted);}
+
+  .auth-form h1{font-family:'Oswald',sans-serif;font-weight:500;font-size:32px;line-height:1.1;letter-spacing:.2px;margin:0 0 32px;}
+
+  .auth-field{margin-bottom:18px;}
+  .auth-field label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;}
+  .auth-label-row{display:flex;justify-content:space-between;align-items:baseline;}
+  .auth-link{background:none;border:none;padding:0;font:500 13px 'Inter',sans-serif;color:var(--amber);cursor:pointer;}
+
+  .auth-input{position:relative;}
+  .auth-input input{width:100%;height:52px;padding:0 16px;border-radius:10px;outline:none;
+    background:var(--surface);border:1px solid var(--border-strong);color:var(--text);
+    font:500 16px 'Inter',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:border-color .15s, box-shadow .15s;}
+  .auth-input input::placeholder{color:var(--text-muted);opacity:.6;font-weight:400;letter-spacing:0;}
+  .auth-input input:focus{border-color:var(--amber);box-shadow:0 0 0 4px color-mix(in srgb, var(--amber) 15%, transparent);}
+  .auth-input input.nrp{font-family:'JetBrains Mono',monospace;letter-spacing:1.6px;}
+  .auth-input input.pin{letter-spacing:4px;padding-right:52px;}
+
+  .auth-mata{position:absolute;right:4px;top:4px;width:44px;height:44px;border:none;background:none;border-radius:8px;
+    color:var(--text-muted);cursor:pointer;display:grid;place-items:center;}
+  .auth-mata svg{width:19px;height:19px;}
+  .auth-mata:hover,.auth-mata.on{color:var(--text);}
+
+  .auth-error{min-height:18px;margin:-4px 0 8px;font-size:13px;color:var(--red);}
+
+  .auth-btn{width:100%;height:52px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--amber);color:var(--on-amber);font:600 15px 'Inter',sans-serif;letter-spacing:.2px;transition:filter .15s, opacity .15s;}
+  .auth-btn svg{width:18px;height:18px;transition:transform .15s;}
+  .auth-btn:hover{filter:brightness(.93);}
+  .auth-btn:hover svg{transform:translateX(3px);}
+  .auth-btn:disabled{opacity:.5;cursor:default;}
+  .auth-btn-batal{background:transparent;color:var(--text);border:1px solid var(--border-strong);margin-top:10px;}
+  .auth-btn-batal[hidden]{display:none;}
+
+  .auth-siapa{display:flex;align-items:center;gap:10px;margin:-16px 0 28px;}
+  .auth-siapa b{display:block;font-size:14px;font-weight:600;}
+  .auth-siapa span.mono{display:block;font-size:12px;color:var(--text-muted);}
+
+  .auth-kaki{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);opacity:.75;}
+  .auth-kaki-hp{margin-top:auto;padding-top:40px;}
+
+  @media (min-width:900px){
+    .auth{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+    .auth-aside{display:flex;flex-direction:column;position:relative;overflow:hidden;
+      padding:56px 64px;background:var(--surface);border-right:1px solid var(--border);}
+    .auth-besar{margin:auto 0;}
+    .auth-besar img{height:132px;width:auto;border-radius:16px;display:block;margin-bottom:36px;}
+    .auth-besar h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:48px;letter-spacing:.8px;line-height:1.02;margin:0;}
+    .auth-besar p{margin:16px 0 0;color:var(--text-muted);font-size:15px;letter-spacing:.2px;}
+    .auth-garis{width:56px;height:2px;background:var(--amber);margin-top:28px;border-radius:1px;}
+    .auth-watermark{position:absolute;right:-120px;bottom:-140px;width:520px;opacity:.05;filter:grayscale(1);pointer-events:none;}
+    .auth-main{justify-content:center;padding:56px 64px;}
+    .auth-brand,.auth-kaki-hp{display:none;}
+    .auth-form{margin-top:auto;margin-bottom:auto;}
+  }
+
+  /* Lingkaran inisial (header, menu, layar PIN baru) */
+  .akun-inisial{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;flex-shrink:0;
+    background:var(--amber-dim);color:var(--amber);font:600 12px 'Inter',sans-serif;letter-spacing:.3px;}
+
+  /* Menu akun di header */
+  .akun{position:relative;}
+  .akun-btn{background:none;border:none;padding:0;cursor:pointer;border-radius:50%;display:block;}
+  .akun-btn:active{opacity:.7;}
+  .akun-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:40;min-width:230px;padding:6px;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  .akun-menu[hidden]{display:none;}
+  .akun-id{display:flex;align-items:center;gap:10px;padding:8px 8px 10px;margin-bottom:4px;border-bottom:1px solid var(--border);}
+  .akun-id b{display:block;font-size:13px;font-weight:600;}
+  .akun-id span.mono{display:block;font-size:11.5px;color:var(--text-muted);}
+  .akun-id em{margin-left:auto;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--amber);background:var(--amber-dim);padding:2px 6px;border-radius:4px;}
+  .akun-id em[hidden]{display:none;}
+  .akun-menu > button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:var(--radius-sm);
+    padding:9px 8px;font:500 13px 'Inter',sans-serif;color:var(--text);cursor:pointer;}
+  .akun-menu > button:hover{background:var(--surface-2);}
+  .akun-menu > button.keluar{color:var(--red);}
+
+  /* Kolom nama yang terisi otomatis dari akun login */
+  input.nama-login{background:var(--surface-2);color:var(--text-muted);cursor:default;}
