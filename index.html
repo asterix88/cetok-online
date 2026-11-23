@@ -20,32 +20,56 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="cek-sesi">
-<!-- ================= LOGIN NRP (diatur oleh auth.js) ================= -->
-<div id="layarMasuk" class="auth-layar" hidden>
-  <form class="auth-kartu" id="formMasuk" novalidate>
-    <div class="auth-brand"><img class="auth-logo" alt=""><div><b>Stock Component TRACK</b><small>AMM-SBS</small></div></div>
-    <h2>Masuk</h2>
-    <div class="field"><label for="masuk_nrp">NRP</label><input id="masuk_nrp" class="mono" inputmode="numeric" autocomplete="username"></div>
-    <div class="field">
-      <div class="auth-label-row"><label for="masuk_pin">PIN</label><button type="button" class="auth-link" id="btnLupaPin">Lupa PIN?</button></div>
-      <input id="masuk_pin" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="current-password">
+<!-- ================= LOGIN NRP (diatur oleh auth.js) =================
+     Satu layar dengan dua form: Masuk dan PIN baru.
+     Di desktop ada panel merek di kiri; di HP hanya form. -->
+<div id="layarAuth" class="auth" hidden>
+  <aside class="auth-aside">
+    <div class="auth-besar">
+      <img class="auth-logo" alt="">
+      <h2>Stock Component<br>TRACK AMM-SBS</h2>
+      <p>Check · Ambil · Catat</p>
+      <div class="auth-garis"></div>
     </div>
-    <div class="auth-error" id="masukError" role="alert"></div>
-    <button type="submit" class="btn btn-amber btn-block" id="btnMasuk">Masuk</button>
-  </form>
-</div>
+    <div class="auth-kaki"><span>Track Section · AMM-SBS</span><span>Cetok Online</span></div>
+    <img class="auth-logo auth-watermark" alt="">
+  </aside>
 
-<div id="layarPinBaru" class="auth-layar" hidden>
-  <form class="auth-kartu" id="formPinBaru" novalidate>
+  <main class="auth-main">
     <div class="auth-brand"><img class="auth-logo" alt=""><div><b>Stock Component TRACK</b><small>AMM-SBS</small></div></div>
-    <h2>PIN baru</h2>
-    <div class="auth-siapa"><span class="akun-inisial" id="pbInisial"></span><div><b id="pbNama"></b><span class="mono" id="pbNrp"></span></div></div>
-    <div class="field"><label for="pb_pin">PIN baru</label><input id="pb_pin" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>
-    <div class="field"><label for="pb_ulangi">Ulangi PIN</label><input id="pb_ulangi" type="password" class="mono pin" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>
-    <div class="auth-error" id="pbError" role="alert"></div>
-    <button type="submit" class="btn btn-amber btn-block" id="btnSimpanPin">Simpan</button>
-    <button type="button" class="btn btn-outline btn-block auth-batal" id="btnBatalPin" hidden>Batal</button>
-  </form>
+
+    <form class="auth-form" id="formMasuk" novalidate>
+      <h1>Masuk</h1>
+      <div class="auth-field">
+        <label for="masuk_nrp">NRP</label>
+        <div class="auth-input"><input id="masuk_nrp" class="nrp" inputmode="numeric" autocomplete="username" placeholder="Nomor karyawan"></div>
+      </div>
+      <div class="auth-field">
+        <div class="auth-label-row"><label for="masuk_pin">PIN</label><button type="button" class="auth-link" id="btnLupaPin">Lupa PIN?</button></div>
+        <div class="auth-input"><input id="masuk_pin" type="password" class="pin" inputmode="numeric" maxlength="4" autocomplete="current-password"><button type="button" class="auth-mata" data-mata="masuk_pin" aria-label="Tampilkan PIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <div class="auth-error" id="masukError" role="alert"></div>
+      <button type="submit" class="auth-btn" id="btnMasuk"><span>Masuk</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+    </form>
+
+    <form class="auth-form" id="formPinBaru" novalidate hidden>
+      <h1>PIN baru</h1>
+      <div class="auth-siapa"><span class="akun-inisial" id="pbInisial"></span><div><b id="pbNama"></b><span class="mono" id="pbNrp"></span></div></div>
+      <div class="auth-field">
+        <div class="auth-label-row"><label for="pb_pin">PIN baru</label></div>
+        <div class="auth-input"><input id="pb_pin" type="password" class="pin" inputmode="numeric" maxlength="4" autocomplete="new-password"><button type="button" class="auth-mata" data-mata="pb_pin" aria-label="Tampilkan PIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <div class="auth-field">
+        <div class="auth-label-row"><label for="pb_ulangi">Ulangi PIN</label></div>
+        <div class="auth-input"><input id="pb_ulangi" type="password" class="pin" inputmode="numeric" maxlength="4" autocomplete="new-password"><button type="button" class="auth-mata" data-mata="pb_ulangi" aria-label="Tampilkan PIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <div class="auth-error" id="pbError" role="alert"></div>
+      <button type="submit" class="auth-btn" id="btnSimpanPin"><span>Simpan</span></button>
+      <button type="button" class="auth-btn auth-btn-batal" id="btnBatalPin" hidden>Batal</button>
+    </form>
+
+    <div class="auth-kaki auth-kaki-hp"><span>Track Section · AMM-SBS</span><span>Cetok Online</span></div>
+  </main>
 </div>
 
 <div class="app">

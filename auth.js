@@ -61,14 +61,22 @@ function inisial(nama){
 
 // ---- Pindah layar -----------------------------------------------------
 
-const elLayarMasuk = document.getElementById('layarMasuk');
-const elLayarPinBaru = document.getElementById('layarPinBaru');
+const elLayarAuth = document.getElementById('layarAuth');
+const elFormMasuk = document.getElementById('formMasuk');
+const elFormPinBaru = document.getElementById('formPinBaru');
 
-function tampilkanLayarMasuk(pesan){
+// Tampilkan layar login dengan salah satu form (Masuk / PIN baru)
+function tampilkanForm(form){
   document.body.classList.remove('cek-sesi');
   document.body.classList.add('belum-masuk');
-  elLayarPinBaru.hidden = true;
-  elLayarMasuk.hidden = false;
+  elLayarAuth.hidden = false;
+  elFormMasuk.hidden = form !== elFormMasuk;
+  elFormPinBaru.hidden = form !== elFormPinBaru;
+  sembunyikanSemuaPin();
+}
+
+function tampilkanLayarMasuk(pesan){
+  tampilkanForm(elFormMasuk);
   document.getElementById('masuk_pin').value = '';
   document.getElementById('masukError').textContent = pesan || '';
   document.getElementById('masuk_nrp').focus();
@@ -77,10 +85,7 @@ function tampilkanLayarMasuk(pesan){
 // wajib = true  -> PIN awal 0000, tidak bisa dibatalkan
 // wajib = false -> dibuka dari menu "Ganti PIN", ada tombol Batal
 function tampilkanLayarPinBaru(wajib){
-  document.body.classList.remove('cek-sesi');
-  document.body.classList.add('belum-masuk');
-  elLayarMasuk.hidden = true;
-  elLayarPinBaru.hidden = false;
+  tampilkanForm(elFormPinBaru);
   document.getElementById('pbInisial').textContent = inisial(karyawanLogin.nama);
   document.getElementById('pbNama').textContent = karyawanLogin.nama;
   document.getElementById('pbNrp').textContent = karyawanLogin.nrp;
@@ -93,8 +98,7 @@ function tampilkanLayarPinBaru(wajib){
 
 function bukaAplikasi(){
   document.body.classList.remove('cek-sesi', 'belum-masuk');
-  elLayarMasuk.hidden = true;
-  elLayarPinBaru.hidden = true;
+  elLayarAuth.hidden = true;
 
   isAdmin = karyawanLogin.admin;
   isiNamaOtomatis();
@@ -144,7 +148,7 @@ function lanjutSetelahMasuk(){
   }
 }
 
-document.getElementById('formMasuk').addEventListener('submit', async (e)=>{
+elFormMasuk.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const nrp = document.getElementById('masuk_nrp').value.trim();
   const pin = document.getElementById('masuk_pin').value;
@@ -155,13 +159,13 @@ document.getElementById('formMasuk').addEventListener('submit', async (e)=>{
   if(!POLA_PIN.test(pin)){ errEl.textContent = 'PIN berisi 4 angka.'; return; }
 
   errEl.textContent = '';
-  btn.disabled = true; btn.textContent = 'Masuk...';
+  btn.disabled = true;
   try{
     await masuk(nrp, pin);
   }catch(err){
     errEl.textContent = err.message;
   }finally{
-    btn.disabled = false; btn.textContent = 'Masuk';
+    btn.disabled = false;
   }
 });
 
@@ -180,7 +184,7 @@ function cekPinBaru(pin, ulangi){
   return '';
 }
 
-document.getElementById('formPinBaru').addEventListener('submit', async (e)=>{
+elFormPinBaru.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const pin = document.getElementById('pb_pin').value;
   const ulangi = document.getElementById('pb_ulangi').value;
@@ -191,7 +195,7 @@ document.getElementById('formPinBaru').addEventListener('submit', async (e)=>{
   if(salah){ errEl.textContent = salah; return; }
 
   errEl.textContent = '';
-  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  btn.disabled = true;
   try{
     const { error } = await sb.auth.updateUser({ password: PIN_PREFIX + pin });
     if(error) throw error;
@@ -204,11 +208,31 @@ document.getElementById('formPinBaru').addEventListener('submit', async (e)=>{
   }catch(err){
     errEl.textContent = 'Gagal menyimpan PIN: ' + (err.message || err);
   }finally{
-    btn.disabled = false; btn.textContent = 'Simpan';
+    btn.disabled = false;
   }
 });
 
 document.getElementById('btnBatalPin').addEventListener('click', bukaAplikasi);
+
+
+// ---- Tombol mata: tampilkan / sembunyikan PIN ---------------------------
+
+function sembunyikanSemuaPin(){
+  document.querySelectorAll('.auth-mata').forEach(btn=>{
+    document.getElementById(btn.dataset.mata).type = 'password';
+    btn.classList.remove('on');
+  });
+}
+
+document.querySelectorAll('.auth-mata').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const input = document.getElementById(btn.dataset.mata);
+    const tampil = input.type === 'password';
+    input.type = tampil ? 'text' : 'password';
+    btn.classList.toggle('on', tampil);
+    input.focus();
+  });
+});
 
 
 // ---- Keluar -----------------------------------------------------------
