@@ -21,11 +21,10 @@ Mockup tampilan (belum diterapkan ke web dan database). Buka `mockup-login-nrp.h
 - Filter: tombol Semua / Input / Ambil / Transfer, serta dropdown Unit (dikelompokkan Excavator / Bulldozer) yang bisa dicari.
 
 ## Aging komponen
-- Tab Stok menampilkan sudah berapa hari tiap baris part berada di status RFU / NOT RFU. Hari 0 dihitung dari tanggal part diinput (`created_at` baris stok).
-- Warna aging: 0–30 hari hijau, 31–90 hari oranye, lebih dari 90 hari merah (batas masih usulan).
-- Panel ringkasan: rata-rata dan aging terlama, serta jumlah part per rentang (dengan rincian RFU / NOT RFU). Klik rentang untuk menyaring daftar.
-- HP: kartu part dengan unit, status, WO, lokasi, dan bar aging. Desktop: tabel dengan kolom Aging yang bisa diurutkan, plus tombol Export.
-- Pencarian juga mencakup WO.
+- Aging = jumlah hari part berada di status saat ini. Hari 0 = tanggal part diinput.
+- Pindah status RFU -> NOT RFU atau NOT RFU -> RFU membuat aging mulai lagi dari 0.
+- Tanpa batas warna; aging ditampilkan sebagai angka hari + tanggal mulai.
+- Tab Stok: HP berupa daftar kartu, desktop berupa tabel dengan kolom Aging. Bisa diurutkan "Aging terlama", difilter RFU / NOT RFU, dan dicari berdasarkan WO.
 
 ## Rencana perubahan database (menunggu persetujuan)
 - Tabel baru `karyawan`: `nrp`, `nama`, `admin` (`ya` / kosong), `wajib_ganti_password`, `aktif`.
