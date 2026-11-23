@@ -23,7 +23,9 @@ Mockup tampilan (belum diterapkan ke web dan database). Buka `mockup-login-nrp.h
 ## Aging komponen
 - Tab Stok menampilkan sudah berapa hari tiap baris part berada di status RFU / NOT RFU. Hari 0 dihitung dari tanggal part diinput (`created_at` baris stok).
 - Warna aging: 0–30 hari hijau, 31–90 hari oranye, lebih dari 90 hari merah (batas masih usulan).
-- Ringkasan di atas daftar menunjukkan jumlah RFU dan NOT RFU per rentang aging. Daftar bisa diurutkan dari yang terlama, dan pencarian juga mencakup WO.
+- Panel ringkasan: rata-rata dan aging terlama, serta jumlah part per rentang (dengan rincian RFU / NOT RFU). Klik rentang untuk menyaring daftar.
+- HP: kartu part dengan unit, status, WO, lokasi, dan bar aging. Desktop: tabel dengan kolom Aging yang bisa diurutkan, plus tombol Export.
+- Pencarian juga mencakup WO.
 
 ## Rencana perubahan database (menunggu persetujuan)
 - Tabel baru `karyawan`: `nrp`, `nama`, `admin` (`ya` / kosong), `wajib_ganti_password`, `aktif`.
