@@ -399,12 +399,13 @@ function populateLocationFilter(){
 }
 document.getElementById('stok_loc_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
 document.getElementById('stok_status_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
+document.getElementById('stok_urut').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
 
 // ---------- Bottom-sheet filter (tampilan HP) ----------
 // <select> asli tetap jadi sumber nilai (dipakai semua logika filter & export);
 // di HP select disembunyikan dan diganti tombol + sheet yang lebih ringkas.
 function syncFilterButtons(){
-  [['stok_loc_filter','locBtn'],['stok_status_filter','statusBtn']].forEach(([selId,btnId])=>{
+  [['stok_loc_filter','locBtn'],['stok_status_filter','statusBtn'],['stok_urut','urutBtn']].forEach(([selId,btnId])=>{
     const sel = document.getElementById(selId), btn = document.getElementById(btnId);
     if(!sel || !btn) return;
     const opt = sel.selectedOptions[0];
@@ -418,6 +419,7 @@ function openFilterSheet(btn){
   const selId = btn.dataset.for, title = btn.dataset.title;
   const sel = document.getElementById(selId);
   const isLoc = selId === 'stok_loc_filter';
+  const isUrut = selId === 'stok_urut';   // pilihan urutan: tanpa angka jumlah part
   filterSheetSel = sel;
   filterSheetBtn = btn;
   // Jumlah part per opsi, mengikuti filter lain yang sedang aktif
@@ -432,7 +434,7 @@ function openFilterSheet(btn){
     const n = o.value === '' ? rows.length : (counts.get(o.value)||0);
     const label = (!isLoc && (o.value==='RFU' || o.value==='NOT RFU')) ? statusBadge(o.value) : esc(o.textContent);
     const cls = 'sheet-item' + (o.value===sel.value ? ' active' : '') + (n===0 && o.value!=='' ? ' zero' : '');
-    return `<div class="${cls}" role="option" data-val="${esc(o.value)}"><span>${label}</span><span class="cnt">${n}</span></div>`;
+    return `<div class="${cls}" role="option" data-val="${esc(o.value)}"><span>${label}</span>${isUrut ? '' : `<span class="cnt">${n}</span>`}</div>`;
   }).join('');
   const ov = document.getElementById('filterSheet');
   const sheet = ov.querySelector('.sheet');
@@ -461,7 +463,7 @@ function closeFilterSheet(){
   if(filterSheetBtn) filterSheetBtn.setAttribute('aria-expanded','false');
   setTimeout(()=>{ if(!ov.classList.contains('open')) ov.style.display = 'none'; }, 240);
 }
-['locBtn','statusBtn'].forEach(id=>{
+['locBtn','statusBtn','urutBtn'].forEach(id=>{
   const btn = document.getElementById(id);
   btn.setAttribute('aria-expanded','false');
   btn.addEventListener('click', ()=>{
@@ -511,7 +513,7 @@ function getFilteredStokRows(skip){
   } else if(statusFilter){
     rows = rows.filter(p => (p.status || '').toUpperCase() === statusFilter);
   }
-  return rows;
+  return pakaiUrutanStok(rows);   // aging.js: "Terbaru" atau "Aging terlama"
 }
 // Stabilo kuning: bungkus bagian teks yang cocok dengan kata kunci pencarian
 // (tidak peduli huruf besar/kecil). Teks tetap di-escape supaya aman.
@@ -569,7 +571,7 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td></tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ag-col">${selAgingHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td></tr>`).join('');
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -594,13 +596,15 @@ function exportStokExcel(){
     'WO': p.wo || '-',
     'Lokasi': p.loc || '-',
     'Qty': Number(p.qty),
+    'Aging (hari)': hariAging(p) === null ? '-' : hariAging(p),
+    'Aging sejak': hariAging(p) === null ? '-' : tanggalAging(p),
     'Keterangan': p.remarks || '-'
   }));
 
   const ws = XLSX.utils.json_to_sheet(dataForSheet);
   ws['!cols'] = [
     { wch: 5 }, { wch: 20 }, { wch: 34 }, { wch: 12 },
-    { wch: 10 }, { wch: 12 }, { wch: 26 }, { wch: 8 }, { wch: 22 }
+    { wch: 10 }, { wch: 12 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 22 }
   ];
 
   const wb = XLSX.utils.book_new();
@@ -1143,6 +1147,7 @@ function paDetailHtml(p){
         <div><dt>Lokasi</dt><dd>${esc(p.loc||'-')}</dd></div>
         <div><dt>Status</dt><dd>${statusBadge(p.status)}</dd></div>
         <div><dt>WO</dt><dd class="mono">${esc(p.wo||'-')}</dd></div>
+        <div><dt>Aging</dt><dd>${agingPanelHtml(p)}</dd></div>
       </dl>
     </div>
     ${p.remarks ? `<div class="pa-note"><span>Catatan</span>${esc(p.remarks)}</div>` : ''}

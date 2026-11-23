@@ -7,6 +7,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `01-login-nrp.sql` | Tabel `karyawan`, fungsi login NRP, fungsi admin cek kolom `admin = 'ya'` | sudah dijalankan (23 Nov 2026) |
 | `02-data-karyawan.sql` | Daftar akun karyawan | **tidak disimpan di GitHub** (repo publik, berisi data pribadi) |
 | `03-wo.sql` | Kolom WO di stok & riwayat, NRP pencatat di riwayat, fungsi `ubah_wo_part` (admin) | belum dijalankan |
+| `04-aging.sql` | Kolom `aging_sejak` di stok + trigger reset saat status berganti | belum dijalankan (setelah 03) |
 
 ## Urutan pasang login NRP
 
@@ -24,6 +25,12 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 ```sql
 update public.stok set wo = '200041587' where id = '...';
 ```
+
+## Urutan pasang Aging
+
+1. Jalankan `04-aging.sql` (setelah `03-wo.sql`), lalu merge kode web Aging.
+2. Part lama diberi tanggal aging perkiraan: transaksi masuk paling awal di riwayat
+   untuk part + lokasi + status yang sama, kalau tidak ada pakai `updated_at`.
 
 ## Kelola akun sehari-hari (SQL Editor)
 

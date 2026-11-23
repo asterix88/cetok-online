@@ -114,8 +114,13 @@
           <option value="NOT RFU">NOT RFU</option>
           <option value="EMPTY">Tanpa Status</option>
         </select>
+        <select id="stok_urut">
+          <option value="">Terbaru</option>
+          <option value="aging">Aging terlama</option>
+        </select>
         <button type="button" class="filter-btn" id="locBtn" data-for="stok_loc_filter" data-title="Filter Lokasi"><span class="fb-label">Semua Lokasi</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
         <button type="button" class="filter-btn" id="statusBtn" data-for="stok_status_filter" data-title="Filter Status"><span class="fb-label">Semua Status</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="filter-btn" id="urutBtn" data-for="stok_urut" data-title="Urutkan"><span class="fb-label">Terbaru</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       </div>
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <div class="sheet-pills" id="pillsSemua" style="margin-bottom:0;"></div>
@@ -130,7 +135,7 @@
       <div class="sheet-pills" id="pillsBulldozer"></div>
       <div class="card">
         <table>
-          <thead><tr><th>No</th><th>Parts Number</th><th>Parts Description</th><th class="unit-col">Unit</th><th>Status</th><th class="wo-col">WO</th><th>Lokasi</th><th style="text-align:right;">Qty</th><th class="ket-col">Keterangan</th></tr></thead>
+          <thead><tr><th>No</th><th>Parts Number</th><th>Parts Description</th><th class="unit-col">Unit</th><th>Status</th><th class="wo-col">WO</th><th>Lokasi</th><th style="text-align:right;">Qty</th><th class="ag-col">Aging</th><th class="ket-col">Keterangan</th></tr></thead>
           <tbody id="stokTableBody"></tbody>
         </table>
         <div id="stokEmpty"></div>
@@ -242,6 +247,7 @@
 
 <script src="script.js"></script>
 <script src="wo.js"></script>
+<script src="aging.js"></script>
 <script src="auth.js"></script>
 </body>
   </html>
