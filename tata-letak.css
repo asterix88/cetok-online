@@ -1,0 +1,97 @@
+/* =====================================================================
+   tata-letak.css -- Tata letak HP & desktop (sesuai mockup final)
+
+   HP (<= 899px)
+     - Susunan tetap seperti semula: header, ringkasan, tab di atas.
+     - Ringkasan RFU / NOT RFU jadi satu baris ringkas di dalam kotak:
+       titik warna + label di kiri, angka di kanan.
+
+   Desktop (>= 900px)
+     - Menu samping (logo + Stok/Ambil/Transfer/Input/Riwayat) di kiri.
+     - Judul halaman besar di atas konten, tombol tema & akun di kanan.
+     - Ringkasan RFU / NOT RFU hanya tampil di tab Stok.
+
+   Tidak ada elemen HTML yang dipindah: di desktop, header dibuat
+   "display:contents" supaya logo, judul, dan tombol akun bisa ditaruh
+   langsung di grid .app. File ini dimuat SETELAH style.css.
+   ===================================================================== */
+
+:root{
+  --lebar-menu-samping: 244px;
+  --lebar-konten-maks: 1240px;
+  --lebar-form-maks: 620px;
+  --lebar-riwayat-maks: 960px;
+}
+
+/* Judul halaman hanya untuk desktop */
+.judul-halaman{display:none;}
+
+/* Titik warna di depan label RFU / NOT RFU */
+.stat .lbl::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:1px;}
+.stat.warn .lbl::before{background:var(--red);}
+
+
+/* ---------------------------------------------------------------------
+   HP: ringkasan RFU / NOT RFU satu baris
+   --------------------------------------------------------------------- */
+@media (max-width:899px){
+  .stats{margin:14px 16px 2px;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .stat{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;text-align:left;}
+  .stat:first-child{padding-left:14px;}
+  .stat .lbl{order:-1;margin-top:0;font-size:12.5px;}
+  .stat .num{font-size:22px;font-weight:500;}
+}
+
+
+/* ---------------------------------------------------------------------
+   Desktop: menu samping
+   --------------------------------------------------------------------- */
+@media (min-width:900px){
+  .app{
+    max-width:none;margin:0;
+    display:grid;
+    grid-template-columns:var(--lebar-menu-samping) minmax(0,1fr);
+    grid-template-rows:auto auto 1fr;
+    grid-template-areas:
+      "merek  atas"
+      "menu   ringkasan"
+      "menu   isi";
+    align-items:start;
+  }
+  /* Latar menu samping (setinggi layar) */
+  .app::before{content:"";position:fixed;left:0;top:0;bottom:0;width:var(--lebar-menu-samping);background:var(--surface-2);border-right:1px solid var(--border);z-index:0;}
+
+  /* Header dibongkar: isinya langsung jadi bagian grid */
+  header.top,.top-row{display:contents;}
+
+  /* Logo + nama aplikasi di atas menu samping */
+  .top-row > div:first-child{grid-area:merek;position:relative;z-index:1;margin:20px 14px 0;padding:4px 8px 14px;border-bottom:1px solid var(--border);}
+  header.top h1{font-size:15px;}
+  header.top .sub{display:block;margin-top:4px;}
+
+  /* Menu samping */
+  nav.tabs{grid-area:menu;position:sticky;top:0;z-index:1;flex-direction:column;gap:2px;padding:12px 14px;border:none;overflow:visible;}
+  nav.tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:11px;padding:9px 10px;font-size:13.5px;font-weight:500;border:none;border-radius:var(--radius);}
+  nav.tabs button:hover{background:var(--surface);color:var(--text);}
+  nav.tabs button.active{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
+  nav.tabs button.active svg{color:var(--amber);}
+
+  /* Judul halaman + tombol tema & akun */
+  .judul-halaman{display:block;grid-area:atas;justify-self:start;margin:22px 0 0 40px;font-family:'Oswald',sans-serif;font-weight:500;font-size:26px;letter-spacing:.2px;line-height:1.2;}
+  .top-actions{grid-area:atas;justify-self:end;margin:20px 40px 0 0;}
+
+  /* Ringkasan RFU / NOT RFU: dua kotak, hanya di tab Stok */
+  .stats{grid-area:ringkasan;width:min(460px,100%);margin:16px 0 0 40px;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .stat{padding:14px 18px;text-align:left;}
+  .stat:first-child{padding-left:18px;}
+  .stat .lbl{margin:0 0 6px;font-size:12.5px;}
+  .stat .num{font-size:30px;}
+  .stat{display:flex;flex-direction:column;}
+  .stat .lbl{order:-1;}
+  body:not([data-tab="stok"]) .stats{display:none;}
+
+  /* Konten */
+  main{grid-area:isi;width:100%;max-width:var(--lebar-konten-maks);padding:14px 40px 48px;}
+  #tab-ambil .card,#tab-transfer .card,#tab-input .card{max-width:var(--lebar-form-maks);}
+  #tab-riwayat{max-width:var(--lebar-riwayat-maks);}
+}
