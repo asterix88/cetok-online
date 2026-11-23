@@ -20,8 +20,15 @@ Mockup tampilan (belum diterapkan ke web dan database). Buka `mockup-login-nrp.h
 - Kartu: ikon jenis (Input / Ambil / Transfer), nama part, PN, unit, status, WO, lokasi (transfer: asal → tujuan), keterangan, nama + NRP, waktu, dan qty berwarna.
 - Filter: tombol Semua / Input / Ambil / Transfer, serta dropdown Unit (dikelompokkan Excavator / Bulldozer) yang bisa dicari.
 
+## Aging komponen
+- Tab Stok menampilkan sudah berapa hari tiap baris part berada di status RFU / NOT RFU. Hari 0 dihitung dari tanggal part diinput (`created_at` baris stok).
+- Warna aging: 0–30 hari hijau, 31–90 hari oranye, lebih dari 90 hari merah (batas masih usulan).
+- Ringkasan di atas daftar menunjukkan jumlah RFU dan NOT RFU per rentang aging. Daftar bisa diurutkan dari yang terlama, dan pencarian juga mencakup WO.
+
 ## Rencana perubahan database (menunggu persetujuan)
 - Tabel baru `karyawan`: `nrp`, `nama`, `admin` (`ya` / kosong), `wajib_ganti_password`, `aktif`.
 - Kolom baru `wo` (kosong) di tabel stok dan riwayat. Data part lama akan diisi manual.
+- Baris stok dipisah per WO: part yang sama di lokasi + status yang sama tapi WO-nya berbeda menjadi baris sendiri.
+- Fungsi yang perlu diubah: `input_barang`, `ambil_barang`, `transfer_stok`, `update_part`, `update_riwayat`, `get_all_data`, `get_riwayat_page`. Parameter WO dibuat opsional supaya WA bot v2 tetap jalan.
 
 Nama dan NRP di mockup hanya contoh.

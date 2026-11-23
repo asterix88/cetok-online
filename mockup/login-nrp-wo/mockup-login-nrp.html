@@ -229,6 +229,48 @@
   .picked .mono{font-size:11.5px;}
   .wo{font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--muted);border:1px solid var(--line-2);border-radius:4px;padding:0 4px;}
   .wov{font-size:12px !important;color:var(--text) !important;}
+  .aging{margin:16px 16px 6px;padding:14px 16px 14px;background:var(--field);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);}
+  .ag-h{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;margin-bottom:10px;}
+  .ag-leg{font-weight:500;color:var(--muted);font-size:11.5px;display:flex;align-items:center;gap:5px;}
+  .ag-leg .dot+.dot{margin-left:0;}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:2px;}
+  .dot.g{background:var(--green);} .dot.r{background:var(--red);}
+  .ag-leg .dot.r{margin-left:8px;}
+  .ag-bar{display:flex;gap:3px;height:8px;border-radius:4px;overflow:hidden;}
+  .ag-bar i{display:block;}
+  .ag-bar .a1,.bk.a1 .bk-l::before{background:var(--a1);}
+  .ag-bar .a2,.bk.a2 .bk-l::before{background:var(--a2);}
+  .ag-bar .a3,.bk.a3 .bk-l::before{background:var(--a3);}
+  .bks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .bk{padding:9px 10px;border-radius:9px;background:var(--soft);cursor:pointer;border:1px solid transparent;}
+  .bk:hover{border-color:var(--line-2);}
+  .bk-l{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;}
+  .bk-l::before{content:"";width:8px;height:8px;border-radius:2px;}
+  .bk-n{display:flex;gap:10px;margin-top:4px;font-family:'Oswald',sans-serif;font-weight:600;font-size:17px;}
+  .bk-n span{display:flex;align-items:center;gap:4px;}
+  :root{--a1:#5E8E74;--a2:#D99A42;--a3:#D2654F;}
+  :root[data-theme="light"]{--a1:#7FAF95;--a2:#D9A24F;--a3:#C2573F;}
+  .sbar{display:flex;gap:8px;padding:10px 16px 14px;}
+  .seg.sm{flex:1;}
+  .sbar .dd{flex-shrink:0;width:auto !important;} .sbar .seg{flex-basis:auto !important;} .sbar .dd svg:first-child{color:var(--muted);}
+  .sk{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);}
+  .sk:last-child{border-bottom:none;}
+  .sk-b{flex:1;min-width:0;}
+  .sk-t{font-weight:600;font-size:14px;line-height:1.3;}
+  .sk-pn{font-size:12px;color:var(--muted);margin-top:2px;}
+  .sk-loc{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-top:8px;}
+  .sk-loc svg{width:14px;height:14px;color:var(--faint);flex-shrink:0;}
+  .sk-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+  .sk-q{display:flex;align-items:baseline;gap:4px;}
+  .sk-q b{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;line-height:1;}
+  .sk-q span{font-size:11px;color:var(--muted);}
+  .age{display:flex;align-items:baseline;gap:4px;padding:3px 9px;border-radius:999px;}
+  .age b{font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;line-height:1.2;}
+  .age span{font-size:11px;font-weight:500;}
+  .age.a1{background:color-mix(in srgb,var(--a1) 16%,transparent);color:color-mix(in srgb,var(--a1) 70%,var(--text));}
+  .age.a2{background:color-mix(in srgb,var(--a2) 18%,transparent);color:color-mix(in srgb,var(--a2) 75%,var(--text));}
+  .age.a3{background:color-mix(in srgb,var(--a3) 16%,transparent);color:var(--a3);}
+  .sk-d{font-size:10.5px;color:var(--faint);}
   .formp{padding:20px 16px 32px;}
   .ff{margin-bottom:16px;}
   .ff label{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:7px;}
@@ -356,13 +398,110 @@
     </nav>
 
     <div class="tab" id="t-stok">
-      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Cari parts number atau nama part"></div>
-      <div class="list">
-        <div class="it"><div><div class="pn">1R-0749</div><div class="ds">Filter Fuel · Rak A-03</div></div><div class="qty"><b>6</b><span class="tag g">RFU</span></div></div>
-        <div class="it"><div><div class="pn">7X-2537</div><div class="ds">Track Roller · Laydown</div></div><div class="qty"><b>2</b><span class="tag r">NOT RFU</span></div></div>
-        <div class="it"><div><div class="pn">259-6588</div><div class="ds">Idler Group · Fabrikasi</div></div><div class="qty"><b>1</b><span class="tag g">RFU</span></div></div>
-        <div class="it"><div><div class="pn">195-27-33110</div><div class="ds">Sprocket Segment · Trackindo</div></div><div class="qty"><b>12</b><span class="tag g">RFU</span></div></div>
+      <div class="aging">
+        <div class="ag-h"><span>Aging stok</span><span class="ag-leg"><i class="dot g"></i>RFU <i class="dot r"></i>NOT RFU</span></div>
+        <div class="ag-bar">
+          <i class="a1" style="flex:96"></i><i class="a2" style="flex:41"></i><i class="a3" style="flex:22"></i>
+        </div>
+        <div class="bks">
+          <div class="bk a1"><div class="bk-l">0–30 hari</div><div class="bk-n"><span><i class="dot g"></i>88</span><span><i class="dot r"></i>8</span></div></div>
+          <div class="bk a2"><div class="bk-l">31–90 hari</div><div class="bk-n"><span><i class="dot g"></i>38</span><span><i class="dot r"></i>3</span></div></div>
+          <div class="bk a3"><div class="bk-l">&gt; 90 hari</div><div class="bk-n"><span><i class="dot g"></i>16</span><span><i class="dot r"></i>6</span></div></div>
+        </div>
       </div>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Cari parts number, nama part, atau WO"></div>
+      <div class="sbar">
+        <div class="seg sm"><button class="on">Semua</button><button>RFU</button><button>NOT RFU</button></div>
+        <button class="dd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"/><path d="m3 16 4 4 4-4"/><path d="M17 20V4"/><path d="m13 8 4-4 4 4"/></svg><span class="dd-v">Terlama</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      </div>
+      <div class="rlist">
+      <div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">TRACK ROLLER</div>
+          <div class="sk-pn mono">7X-2537</div>
+          <div class="rc-u"><span class="unit mono">D155A-6R</span><span class="st r">NOT RFU</span><span class="woc"><b>WO</b><span class="mono">200031870</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>LAYDOWN</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>2</b><span>qty</span></div>
+          <div class="age a3"><b>214</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 23/04/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">SPROCKET SEGMENT</div>
+          <div class="sk-pn mono">195-27-33110</div>
+          <div class="rc-u"><span class="unit mono">D375A-6R</span><span class="st r">NOT RFU</span><span class="woc"><b>WO</b><span class="mono">200039220</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>TRACKINDO</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>4</b><span>qty</span></div>
+          <div class="age a3"><b>127</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 19/07/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">SWASH PLATE ANGLE SENSOR</div>
+          <div class="sk-pn mono">729-12-2100</div>
+          <div class="rc-u"><span class="unit mono">PC2000-11R</span><span class="st g">RFU</span><span class="woc none"><b>WO</b><span>–</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>RAK ABU - ELECTRICAL COMP</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>1</b><span>qty</span></div>
+          <div class="age a3"><b>96</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 19/08/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">IDLER GROUP</div>
+          <div class="sk-pn mono">259-6588</div>
+          <div class="rc-u"><span class="unit mono">D375A-6R</span><span class="st r">NOT RFU</span><span class="woc"><b>WO</b><span class="mono">200046011</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>VENDOR</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>1</b><span>qty</span></div>
+          <div class="age a2"><b>48</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 06/10/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">ALTERNATOR</div>
+          <div class="sk-pn mono">561-3001</div>
+          <div class="rc-u"><span class="unit mono">CAT395</span><span class="st g">RFU</span><span class="woc"><b>WO</b><span class="mono">200040813</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>LOGISTIK</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>2</b><span>qty</span></div>
+          <div class="age a1"><b>21</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 02/11/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">OPERATOR'S SEAT</div>
+          <div class="sk-pn mono">17A-57-22112</div>
+          <div class="rc-u"><span class="unit mono">D155A-6R</span><span class="st g">RFU</span><span class="woc none"><b>WO</b><span>–</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>LAYDOWN</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>1</b><span>qty</span></div>
+          <div class="age a1"><b>3</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 20/11/2026</div>
+        </div>
+      </div><div class="sk">
+        <div class="sk-b">
+          <div class="sk-t">FILTER FUEL</div>
+          <div class="sk-pn mono">1R-0749</div>
+          <div class="rc-u"><span class="unit mono">PC1250SP-11</span><span class="st g">RFU</span><span class="woc none"><b>WO</b><span>–</span></span></div>
+          <div class="sk-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>RAK A-03</div>
+        </div>
+        <div class="sk-r">
+          <div class="sk-q"><b>6</b><span>qty</span></div>
+          <div class="age a1"><b>0</b><span>hari</span></div>
+          <div class="sk-d mono">sejak 23/11/2026</div>
+        </div>
+      </div>
+      </div>
+      <div class="pager"><span class="mono">1–7 dari 159</span><div><button disabled>Sebelumnya</button><button>Berikutnya</button></div></div>
     </div>
 
     <div class="formp tab" id="t-ambil" hidden>
