@@ -353,6 +353,75 @@
   .sbtn{width:100%;height:50px;border:none;border-radius:10px;font:600 15px 'Inter';cursor:pointer;margin-top:8px;color:var(--on-solid);}
   .sbtn.red{background:var(--red);} .sbtn.amber{background:var(--amber);color:var(--on-amber);} .sbtn.green{background:var(--green);}
   .div{height:1px;background:var(--line);margin:20px 0 18px;}
+
+  /* ================= HP (v2) ================= */
+  .mf{display:none;}
+  @media (max-width:899px){
+    .top{padding:12px 16px;border-bottom:none;}
+    .m-logo{height:26px;}
+    .ttl h1{font-size:22px;}
+    #t-stok .stats2{display:none;}
+    #t-stok .sbar{display:none;}
+    .tools{padding:0 16px;}
+    .tools .search{margin:2px 0 0;}
+    .search input{height:42px !important;background:var(--soft) !important;border-color:transparent !important;border-radius:10px !important;box-shadow:none !important;font-size:14px;}
+    .search input:focus{background:var(--field) !important;border-color:var(--line-2) !important;}
+    .mf{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px 0 16px;margin-top:10px;border-bottom:1px solid var(--line);}
+    .mtabs{display:flex;gap:20px;}
+    .mtabs button{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;padding:11px 0 10px;font-size:13.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+    .mtabs button span{font-size:12px;font-variant-numeric:tabular-nums;color:var(--faint);font-weight:500;}
+    .mtabs button.on{color:var(--text);border-bottom-color:var(--text);}
+    .mtabs button.on span{color:var(--muted);}
+    .mico{all:unset;cursor:pointer;display:grid;place-items:center;width:36px;height:36px;border-radius:8px;color:var(--muted);}
+    .mico svg{width:17px;height:17px;}
+    .mico:hover{background:var(--soft);}
+    .rlist{border-top:none !important;}
+    .rlist.cards{background:transparent;}
+    .pc{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:3px;padding:13px 16px;border-bottom:1px solid var(--line);}
+    .pc-t{font-size:14px;font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pc-q{font-family:'Oswald',sans-serif;font-size:17px;font-weight:500;line-height:1.2;text-align:right;}
+    .pc-m{margin:0 !important;font-size:12.5px;color:var(--muted);display:flex;align-items:center;flex-wrap:wrap;gap:0 6px;min-width:0;}
+    .pc-m .mono{font-size:11.5px;color:var(--muted);}
+    .pc-m .st{margin-left:4px;}
+    .pc-l2{font-size:12px;}
+    .pc-l2 .mono{color:var(--muted);}
+    .sep{color:var(--faint);}
+    .pc-a{margin:0;font-size:12.5px;text-align:right;color:var(--muted);white-space:nowrap;}
+    .pc-a b{color:var(--text);font-weight:600;}
+    .pc-d{font-size:11px;text-align:right;color:var(--faint);}
+    .pager{justify-content:space-between;padding:14px 16px;border-top:none;}
+    .pager span{font-size:12px;color:var(--muted);}
+    .pager button{height:34px;padding:0 12px;font-size:12.5px;}
+    /* riwayat */
+    #t-riwayat .search{margin:2px 16px 0 !important;}
+    #t-riwayat .fbar{flex-wrap:nowrap;gap:4px;padding:0 8px 0 16px;margin-top:10px;border-bottom:1px solid var(--line);}
+    #t-riwayat .seg{flex:1 1 auto !important;flex-basis:auto !important;display:flex;gap:18px;background:none;border:none;padding:0;border-radius:0;box-shadow:none;}
+    #t-riwayat .seg button{flex:none;background:none !important;box-shadow:none !important;border:none;border-radius:0;padding:11px 0 10px;height:auto;font-size:13.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+    #t-riwayat .seg button.on{color:var(--text);border-bottom-color:var(--text);}
+    #t-riwayat .dd-wrap{flex:none !important;position:static;}
+    #t-riwayat .dd{width:auto !important;height:34px;padding:0 8px;border:none;background:none;box-shadow:none;font-size:13px;gap:4px;}
+    #t-riwayat .dd .dd-l{color:var(--muted);font-weight:500;}
+    #t-riwayat .dd .dd-v{display:none;}
+    #t-riwayat .dd.sel .dd-l{display:none;}
+    #t-riwayat .dd.sel .dd-v{display:inline;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;}
+    #t-riwayat .dd svg{margin:0;width:14px;height:14px;color:var(--faint);}
+    #t-riwayat .pop{left:16px !important;right:16px !important;width:auto !important;}
+    .rc{gap:12px;padding:14px 16px;}
+    .rc-ic{width:30px;height:30px;border-radius:8px;}
+    .rc-ic svg{width:15px;height:15px;}
+    .rc-u{margin-top:7px;}
+    .unit{border:none;}
+    .woc{border-color:var(--line);}
+    .rc-m{gap:4px;margin-top:8px;}
+    .mi{font-size:12.5px;color:var(--muted);}
+    .mi span{color:var(--text);}
+    .mi svg{width:13px;height:13px;}
+    .tabs{padding-top:4px;}
+    .tabs span{font-size:10.5px;gap:2px;padding:5px 2px;}
+    .tabs span svg{width:20px;height:20px;}
+    .tabs span.on{color:var(--text);}
+    .tabs span.on svg{color:var(--amber);}
+  }
 </style>
 </head>
 <body>
@@ -477,90 +546,38 @@
           <button class="dd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"/><path d="m3 16 4 4 4-4"/><path d="M17 20V4"/><path d="m13 8 4-4 4 4"/></svg><span class="dd-v">Aging terlama</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
         </div>
       </div>
+      <div class="mf">
+        <div class="mtabs"><button class="on">Semua<span>159</span></button><button>RFU<span>142</span></button><button>NOT RFU<span>17</span></button></div>
+        <button class="mico" aria-label="Urutkan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"/><path d="m3 16 4 4 4-4"/><path d="M17 20V4"/><path d="m13 8 4-4 4 4"/></svg></button>
+      </div>
       <div class="rlist cards"><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">TRACK ROLLER</div>
-          <div class="pc-pn mono">7X-2537</div>
-          <div class="pc-m"><span class="mono">D155A-6R</span> <span class="st r">NOT RFU</span></div>
-          <div class="pc-m">LAYDOWN · WO <span class="mono">200031870</span></div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">2</div>
-          <div class="pc-a"><b>214</b> hari</div>
-          <div class="pc-d mono">23/04/2026</div>
-        </div>
+        <div class="pc-t">TRACK ROLLER</div><div class="pc-q">2</div>
+        <div class="pc-m"><span class="mono">7X-2537</span><span class="sep">·</span><span class="mono">D155A-6R</span><span class="st r">NOT RFU</span></div><div class="pc-a"><b>214</b> hari</div>
+        <div class="pc-m pc-l2">LAYDOWN<span class="sep">·</span>WO <span class="mono">200031870</span></div><div class="pc-d mono">23/04/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">SPROCKET SEGMENT</div>
-          <div class="pc-pn mono">195-27-33110</div>
-          <div class="pc-m"><span class="mono">D375A-6R</span> <span class="st r">NOT RFU</span></div>
-          <div class="pc-m">TRACKINDO · WO <span class="mono">200039220</span></div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">4</div>
-          <div class="pc-a"><b>127</b> hari</div>
-          <div class="pc-d mono">19/07/2026</div>
-        </div>
+        <div class="pc-t">SPROCKET SEGMENT</div><div class="pc-q">4</div>
+        <div class="pc-m"><span class="mono">195-27-33110</span><span class="sep">·</span><span class="mono">D375A-6R</span><span class="st r">NOT RFU</span></div><div class="pc-a"><b>127</b> hari</div>
+        <div class="pc-m pc-l2">TRACKINDO<span class="sep">·</span>WO <span class="mono">200039220</span></div><div class="pc-d mono">19/07/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">SWASH PLATE ANGLE SENSOR</div>
-          <div class="pc-pn mono">729-12-2100</div>
-          <div class="pc-m"><span class="mono">PC2000-11R</span> <span class="st g">RFU</span></div>
-          <div class="pc-m">RAK ABU - ELECTRICAL COMP</div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">1</div>
-          <div class="pc-a"><b>96</b> hari</div>
-          <div class="pc-d mono">19/08/2026</div>
-        </div>
+        <div class="pc-t">SWASH PLATE ANGLE SENSOR</div><div class="pc-q">1</div>
+        <div class="pc-m"><span class="mono">729-12-2100</span><span class="sep">·</span><span class="mono">PC2000-11R</span><span class="st g">RFU</span></div><div class="pc-a"><b>96</b> hari</div>
+        <div class="pc-m pc-l2">RAK ABU - ELECTRICAL COMP</div><div class="pc-d mono">19/08/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">IDLER GROUP</div>
-          <div class="pc-pn mono">259-6588</div>
-          <div class="pc-m"><span class="mono">D375A-6R</span> <span class="st r">NOT RFU</span></div>
-          <div class="pc-m">VENDOR · WO <span class="mono">200046011</span></div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">1</div>
-          <div class="pc-a"><b>48</b> hari</div>
-          <div class="pc-d mono">06/10/2026</div>
-        </div>
+        <div class="pc-t">IDLER GROUP</div><div class="pc-q">1</div>
+        <div class="pc-m"><span class="mono">259-6588</span><span class="sep">·</span><span class="mono">D375A-6R</span><span class="st r">NOT RFU</span></div><div class="pc-a"><b>48</b> hari</div>
+        <div class="pc-m pc-l2">VENDOR<span class="sep">·</span>WO <span class="mono">200046011</span></div><div class="pc-d mono">06/10/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">ALTERNATOR</div>
-          <div class="pc-pn mono">561-3001</div>
-          <div class="pc-m"><span class="mono">CAT395</span> <span class="st g">RFU</span></div>
-          <div class="pc-m">LOGISTIK · WO <span class="mono">200040813</span></div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">2</div>
-          <div class="pc-a"><b>21</b> hari</div>
-          <div class="pc-d mono">02/11/2026</div>
-        </div>
+        <div class="pc-t">ALTERNATOR</div><div class="pc-q">2</div>
+        <div class="pc-m"><span class="mono">561-3001</span><span class="sep">·</span><span class="mono">CAT395</span><span class="st g">RFU</span></div><div class="pc-a"><b>21</b> hari</div>
+        <div class="pc-m pc-l2">LOGISTIK<span class="sep">·</span>WO <span class="mono">200040813</span></div><div class="pc-d mono">02/11/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">OPERATOR'S SEAT</div>
-          <div class="pc-pn mono">17A-57-22112</div>
-          <div class="pc-m"><span class="mono">D155A-6R</span> <span class="st g">RFU</span></div>
-          <div class="pc-m">LAYDOWN</div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">1</div>
-          <div class="pc-a"><b>3</b> hari</div>
-          <div class="pc-d mono">20/11/2026</div>
-        </div>
+        <div class="pc-t">OPERATOR'S SEAT</div><div class="pc-q">1</div>
+        <div class="pc-m"><span class="mono">17A-57-22112</span><span class="sep">·</span><span class="mono">D155A-6R</span><span class="st g">RFU</span></div><div class="pc-a"><b>3</b> hari</div>
+        <div class="pc-m pc-l2">LAYDOWN</div><div class="pc-d mono">20/11/2026</div>
       </div><div class="pc">
-        <div class="pc-l">
-          <div class="pc-t">FILTER FUEL</div>
-          <div class="pc-pn mono">1R-0749</div>
-          <div class="pc-m"><span class="mono">PC1250SP-11</span> <span class="st g">RFU</span></div>
-          <div class="pc-m">RAK A-03</div>
-        </div>
-        <div class="pc-r">
-          <div class="pc-q">6</div>
-          <div class="pc-a"><b>0</b> hari</div>
-          <div class="pc-d mono">23/11/2026</div>
-        </div>
+        <div class="pc-t">FILTER FUEL</div><div class="pc-q">6</div>
+        <div class="pc-m"><span class="mono">1R-0749</span><span class="sep">·</span><span class="mono">PC1250SP-11</span><span class="st g">RFU</span></div><div class="pc-a"><b>0</b> hari</div>
+        <div class="pc-m pc-l2">RAK A-03</div><div class="pc-d mono">23/11/2026</div>
       </div></div>
       <div class="tbl-wrap"><table class="tbl">
         <thead><tr><th>Part</th><th>Unit</th><th>Status</th><th>WO</th><th>Lokasi</th><th class="num">Qty</th><th class="num">Aging</th></tr></thead>
@@ -780,7 +797,7 @@
   document.querySelectorAll('#tabs [data-tab]').forEach(x => x.onclick = () => tab(x.dataset.tab));
   document.querySelectorAll('#seg button').forEach(b => b.onclick = () => { document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
   $('unitBtn').onclick = e => { e.stopPropagation(); $('unitPop').classList.toggle('on'); };
-  document.querySelectorAll('#unitPop button').forEach(b => b.onclick = () => { $('unitVal').textContent = b.textContent.trim() === 'Semua unit' ? 'Semua' : b.textContent.trim(); $('unitPop').classList.remove('on'); });
+  document.querySelectorAll('#unitPop button').forEach(b => b.onclick = () => { $('unitVal').textContent = b.textContent.trim() === 'Semua unit' ? 'Semua' : b.textContent.trim(); $('unitPop').classList.remove('on'); $('unitBtn').classList.toggle('sel', $('unitVal').textContent !== 'Semua'); });
   document.addEventListener('click', e => { if(!e.target.closest('.pop')) $('unitPop').classList.remove('on'); });
 
 
