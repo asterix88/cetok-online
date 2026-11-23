@@ -371,7 +371,8 @@
   body.belum-masuk .app{display:none;}
 
   /* ---- Layar login: HP = form saja, desktop = panel merek kiri + form ---- */
-  .auth{min-height:100vh;display:grid;grid-template-columns:1fr;}
+  /* Seluruh layar login memakai Inter supaya tampak rapi dan konsisten */
+  .auth{min-height:100vh;display:grid;grid-template-columns:1fr;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
   .auth[hidden]{display:none;}
   .auth-aside{display:none;}
   .auth-main{display:flex;flex-direction:column;min-height:100vh;padding:56px 24px 24px;}
@@ -380,10 +381,10 @@
 
   .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:56px;}
   .auth-brand img{height:42px;width:auto;border-radius:6px;}
-  .auth-brand b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;letter-spacing:.4px;line-height:1.15;}
-  .auth-brand small{display:block;font-size:12px;color:var(--text-muted);}
+  .auth-brand b{display:block;font-weight:600;font-size:16px;letter-spacing:-.01em;line-height:1.25;}
+  .auth-brand small{display:block;font-size:12.5px;color:var(--text-muted);margin-top:1px;}
 
-  .auth-form h1{font-family:'Oswald',sans-serif;font-weight:500;font-size:32px;line-height:1.1;margin:0 0 32px;}
+  .auth-form h1{font-weight:600;font-size:28px;letter-spacing:-.025em;line-height:1.15;margin:0 0 32px;}
 
   .auth-field{margin-bottom:18px;}
   .auth-field label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;}
@@ -396,8 +397,8 @@
     font:500 16px 'Inter',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:border-color .15s, box-shadow .15s;}
   .auth-input input::placeholder{color:var(--text-muted);opacity:.6;font-weight:400;letter-spacing:0;}
   .auth-input input:focus{border-color:var(--amber);box-shadow:0 0 0 4px color-mix(in srgb, var(--amber) 15%, transparent);}
-  .auth-input input.nrp{font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;}
-  .auth-input input.pin{font-family:'JetBrains Mono',monospace;letter-spacing:8px;padding-right:52px;}
+  .auth-input input.nrp{font-variant-numeric:tabular-nums;letter-spacing:.06em;}
+  .auth-input input.pin{font-variant-numeric:tabular-nums;letter-spacing:.4em;padding-right:52px;}
 
   .auth-mata{position:absolute;right:4px;top:4px;width:44px;height:44px;border:none;background:none;border-radius:8px;
     color:var(--text-muted);cursor:pointer;display:grid;place-items:center;}
@@ -418,7 +419,7 @@
 
   .auth-siapa{display:flex;align-items:center;gap:10px;margin:-16px 0 28px;}
   .auth-siapa b{display:block;font-size:14px;font-weight:600;}
-  .auth-siapa span.mono{display:block;font-size:12px;color:var(--text-muted);}
+  .auth-siapa span.mono{display:block;font-family:inherit;font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--text-muted);}
 
   .auth-kaki{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);opacity:.75;}
   .auth-kaki-hp{margin-top:auto;padding-top:40px;}
@@ -429,8 +430,8 @@
       padding:56px 64px;background:var(--surface);border-right:1px solid var(--border);}
     .auth-besar{margin:auto 0;}
     .auth-besar img{height:132px;width:auto;border-radius:16px;display:block;margin-bottom:36px;}
-    .auth-besar h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:48px;letter-spacing:.8px;line-height:1.02;margin:0;}
-    .auth-besar p{margin:16px 0 0;color:var(--text-muted);font-size:15px;letter-spacing:.2px;}
+    .auth-besar h2{font-weight:700;font-size:40px;letter-spacing:-.03em;line-height:1.1;margin:0;}
+    .auth-besar p{margin:14px 0 0;color:var(--text-muted);font-size:15px;}
     .auth-garis{width:56px;height:2px;background:var(--amber);margin-top:28px;border-radius:1px;}
     .auth-watermark{position:absolute;right:-120px;bottom:-140px;width:520px;opacity:.05;filter:grayscale(1);pointer-events:none;}
     .auth-main{justify-content:center;padding:56px 64px;}
