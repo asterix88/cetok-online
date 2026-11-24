@@ -38,8 +38,13 @@ updateThemeIcon();
 // --- Tab switching: didaftarkan paling awal, tidak bergantung apa pun ---
 // Dijadikan fungsi terpisah (bukan cuma di dalam listener klik tab) supaya
 // bisa dipanggil dari tempat lain juga, mis. saat kartu "Stok Kosong" diklik.
+// Judul halaman di desktop (tata-letak.css menyembunyikannya di HP)
+const JUDUL_TAB = { stok:'Stok', ambil:'Ambil', transfer:'Transfer', input:'Input', riwayat:'Riwayat' };
+
 function switchTab(tabName){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));
+  document.getElementById('judulHalaman').textContent = JUDUL_TAB[tabName] || '';
+  document.body.dataset.tab = tabName;   // dipakai CSS desktop: ringkasan RFU hanya di tab Stok
   document.querySelectorAll('main > section').forEach(s=>s.style.display='none');
   document.getElementById('tab-'+tabName).style.display='block';
 }
