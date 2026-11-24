@@ -19,7 +19,8 @@
 :root{
   --lebar-menu-samping: 244px;
   --lebar-konten-maks: 1240px;
-  --lebar-form-maks: 620px;
+  --lebar-form-maks: 1100px;
+  --lebar-panel-form: 340px;
   --lebar-riwayat-maks: 960px;
 }
 
@@ -92,19 +93,90 @@
 
   /* Konten */
   main{grid-area:isi;width:100%;max-width:var(--lebar-konten-maks);padding:14px 40px 48px;}
-  #tab-ambil .card,#tab-transfer .card,#tab-input .card{max-width:var(--lebar-form-maks);}
   #tab-riwayat{max-width:var(--lebar-riwayat-maks);}
 }
 
 
 /* =====================================================================
-   DESKTOP: TABEL STOK & RIWAYAT SESUAI MOCKUP
-   Tabel stok: kolom Part (nama + parts number), Unit, Status, WO,
-   Lokasi, Qty, Keterangan, Aging. Riwayat: kartu riwayat-desktop.js.
+   TAB STOK: ALAT FILTER (HP & desktop)
+   HP     : baris 1 cari, baris 2 status + urutan, baris 3 lokasi + unit
+   Desktop: semua dalam satu baris
    ===================================================================== */
-.th-desktop,.riwayat-jenis{display:none;}
+.stok-alat{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.stok-alat .stok-cari{flex:1 1 100%;margin:0;}
+.stok-alat .stok-cari input{margin:0;height:44px;}
+.stok-status{flex:1 1 52%;display:flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);}
+.stok-status button{flex:1;height:36px;border:none;background:none;border-radius:var(--radius-sm);font:500 12.5px 'Inter',sans-serif;color:var(--text-muted);cursor:pointer;white-space:nowrap;padding:0 6px;}
+.stok-status button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
+.stok-alat .filter-btn{flex:1 1 40%;height:44px;justify-content:flex-start;background:var(--surface);}
+.stok-alat .filter-btn .fb-pre{color:var(--text-muted);font-weight:400;}
+.stok-alat .filter-btn .fb-label{flex:1;min-width:0;}
+.stok-alat .filter-btn svg.fb-ikon{opacity:1;color:var(--text-muted);}
+.stok-alat .filter-btn.active .fb-pre{color:inherit;}
+#urutBtn{order:1;flex:0 1 auto;}
+#locBtn{order:2;} #unitBtn{order:3;}
+.stok-export{display:flex;justify-content:flex-end;margin-top:4px;}
+.stok-export .btn{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12.5px;}
+
+/* Daftar pilihan filter: selalu berupa popover di bawah tombol */
+.sheet-overlay{align-items:flex-start;justify-content:flex-start;background:transparent;}
+.sheet{position:absolute;max-width:none;border:1px solid var(--border-strong);border-radius:var(--radius);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);transform:none;opacity:0;padding-bottom:0;transition:opacity .12s ease;display:flex;flex-direction:column;}
+.sheet-overlay.open .sheet{transform:none;opacity:1;}
+.sheet-grip,.sheet-head{display:none;}
+.sheet-cari{padding:6px 6px 0;}
+.sheet-cari input{margin:0;height:36px;font-size:13px;}
+.sheet-list{padding:6px;}
+.sheet-item{border-bottom:none;border-radius:var(--radius-sm);padding:9px 10px;}
+.sheet-item:hover{background:var(--surface-2);}
+.sheet-item[hidden],.sheet-grup[hidden]{display:none;}
+.sheet-grup{font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);padding:10px 10px 4px;}
+
+
+/* =====================================================================
+   TAB STOK: KARTU (HP) / TABEL (desktop)
+   ===================================================================== */
+.stok-kartu{display:none;}
+@media (max-width:899px){
+  #tab-stok .card{padding:0;overflow:hidden;}
+  #tab-stok table{display:none;}
+  .stok-kartu{display:block;}
+  #tab-stok .pagination{padding:12px 14px;border-top:1px solid var(--border);}
+  .sk{display:flex;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .sk:last-child{border-bottom:none;}
+  .sk.pa-selected{background:var(--surface-2);}
+  .sk-kiri{min-width:0;}
+  .sk-nama{font-weight:600;font-size:14px;line-height:1.3;}
+  .sk-pn{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .sk-baris{font-size:12.5px;color:var(--text-muted);margin-top:6px;}
+  .sk-baris + .sk-baris{margin-top:3px;}
+  .sk-baris .mono{font-size:12px;color:var(--text);}
+  .sk-catatan{font-style:italic;}
+  .sk-kanan{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;text-align:right;}
+  .sk-qty{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;line-height:1.1;}
+  .sk-qty.habis{color:var(--red);}
+  .sk-aging{margin-top:auto;font-size:12.5px;color:var(--text-muted);}
+  .sk-aging b{color:var(--text);font-weight:600;}
+  .sk-tgl{font-size:11px;color:var(--text-muted);opacity:.75;}
+}
+
+
+/* =====================================================================
+   DESKTOP: TABEL STOK SESUAI MOCKUP
+   Kolom Part (nama + parts number), Unit, Status, WO, Lokasi, Qty,
+   Keterangan, Aging.
+   ===================================================================== */
+.th-desktop{display:none;}
 
 @media (min-width:900px){
+  /* ---------- Alat filter satu baris ---------- */
+  .stok-alat{flex-wrap:nowrap;align-items:center;gap:10px;}
+  .stok-alat .stok-cari{flex:1 1 auto;min-width:200px;}
+  .stok-status{flex:none;}
+  .stok-status button{padding:0 16px;}
+  .stok-alat .filter-btn{flex:0 1 auto;min-width:150px;max-width:220px;}
+  #urutBtn{order:4;min-width:0;}
+
   /* ---------- Tabel stok ---------- */
   .th-hp{display:none;}
   .th-desktop{display:inline;}
@@ -124,48 +196,164 @@
   #tab-stok td.qty{font-family:'Inter',sans-serif;font-weight:500;}
   #tab-stok th.ket-col,#tab-stok td.ket-col{max-width:200px;}
   #tab-stok .pagination{padding:12px 14px;border-top:1px solid var(--border);}
+}
 
-  /* ---------- Riwayat: filter ---------- */
-  #tab-riwayat .filter-row{align-items:stretch;}
-  #filterType{display:none;}
-  .riwayat-jenis{display:flex;flex:1;min-width:0;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);}
-  .riwayat-jenis button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border:none;background:none;border-radius:var(--radius-sm);font:500 13px 'Inter',sans-serif;color:var(--text-muted);cursor:pointer;}
-  .riwayat-jenis button svg{width:15px;height:15px;}
-  .riwayat-jenis button[data-jenis="masuk"] svg{color:var(--green);}
-  .riwayat-jenis button[data-jenis="keluar"] svg{color:var(--red);}
-  .riwayat-jenis button[data-jenis="transfer"] svg{color:var(--amber);}
-  .riwayat-jenis button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
-  #filterUnit{flex:0 0 200px;margin:0;}
 
-  /* ---------- Riwayat: kartu ---------- */
-  #riwayatList{padding:0;}
-  .rk{position:relative;display:flex;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);}
-  .rk:last-child{border-bottom:none;}
-  .rk-ikon{width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border-radius:var(--radius);}
-  .rk-ikon svg{width:17px;height:17px;}
-  .rk-ikon.input{background:var(--green-dim);color:var(--green);}
-  .rk-ikon.ambil{background:var(--red-dim);color:var(--red);}
-  .rk-ikon.transfer{background:var(--amber-dim);color:var(--amber);}
-  .rk-isi{flex:1;min-width:0;}
-  .rk-kepala{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .rk-nama{font-weight:600;font-size:14.5px;line-height:1.3;}
-  .rk-pn{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
-  .rk-qty{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
-  .rk-qty span{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);}
-  .rk-qty b{font-family:'Oswald',sans-serif;font-weight:600;font-size:21px;line-height:1.1;}
-  .rk-qty.input b{color:var(--green);}
-  .rk-qty.ambil b{color:var(--red);}
-  .rk-qty.transfer b{color:var(--amber);}
-  .rk-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;}
-  .rk-unit{font-size:11.5px;padding:2px 7px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--border);}
-  .rk-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px 24px;margin-top:12px;padding-right:36px;}
-  .rk-meta div{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;}
-  .rk-meta svg{width:14px;height:14px;flex-shrink:0;color:var(--text-muted);}
-  .rk-meta span{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .rk-meta em{font-style:normal;font-size:12px;color:var(--text-muted);}
-  .rk-meta .mono{font-size:12.5px;color:var(--text-muted);}
-  .rk-panah{width:13px !important;height:13px !important;color:var(--amber) !important;}
-  .rk-lainnya{position:absolute;right:12px;bottom:12px;width:30px;height:30px;display:grid;place-items:center;border:none;background:none;border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;}
-  .rk-lainnya svg{width:16px;height:16px;}
-  .rk-lainnya:hover{background:var(--surface-2);color:var(--text);}
+/* =====================================================================
+   RIWAYAT: FILTER JENIS + KARTU (HP & desktop, riwayat-kartu.js)
+   ===================================================================== */
+#filterType{display:none;}
+#tab-riwayat .filter-row{flex-wrap:wrap;align-items:stretch;}
+.riwayat-jenis{display:flex;flex:1 1 100%;min-width:0;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);}
+.riwayat-jenis button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border:none;background:none;border-radius:var(--radius-sm);font:500 13px 'Inter',sans-serif;color:var(--text-muted);cursor:pointer;}
+.riwayat-jenis button svg{width:15px;height:15px;}
+.riwayat-jenis button[data-jenis="masuk"] svg{color:var(--green);}
+.riwayat-jenis button[data-jenis="keluar"] svg{color:var(--red);}
+.riwayat-jenis button[data-jenis="transfer"] svg{color:var(--amber);}
+.riwayat-jenis button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
+#filterUnit{flex:1 1 100%;margin:0;}
+
+#riwayatList{padding:0;}
+.rk{position:relative;display:flex;gap:14px;padding:16px;border-bottom:1px solid var(--border);}
+.rk:last-child{border-bottom:none;}
+.rk-ikon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;border-radius:var(--radius);}
+.rk-ikon svg{width:17px;height:17px;}
+.rk-ikon.input{background:var(--green-dim);color:var(--green);}
+.rk-ikon.ambil{background:var(--red-dim);color:var(--red);}
+.rk-ikon.transfer{background:var(--amber-dim);color:var(--amber);}
+.rk-isi{flex:1;min-width:0;}
+.rk-kepala{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.rk-nama{font-weight:600;font-size:14px;line-height:1.3;}
+.rk-pn{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.rk-qty{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.rk-qty span{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);}
+.rk-qty b{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;line-height:1.1;}
+.rk-qty.input b{color:var(--green);}
+.rk-qty.ambil b{color:var(--red);}
+.rk-qty.transfer b{color:var(--amber);}
+.rk-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;}
+.rk-unit{font-size:11px;padding:2px 7px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--border);}
+.rk-meta{display:grid;grid-template-columns:1fr;gap:5px;margin-top:10px;padding-right:30px;}
+.rk-meta div{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;}
+.rk-meta svg{width:14px;height:14px;flex-shrink:0;color:var(--text-muted);}
+.rk-meta span{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rk-meta em{font-style:normal;font-size:11.5px;color:var(--text-muted);}
+.rk-meta .mono{font-size:12px;color:var(--text-muted);}
+.rk-panah{width:12px !important;height:12px !important;color:var(--amber) !important;}
+.rk-lainnya{position:absolute;right:10px;bottom:10px;width:30px;height:30px;display:grid;place-items:center;border:none;background:none;border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;}
+.rk-lainnya svg{width:16px;height:16px;}
+.rk-lainnya:hover{background:var(--surface-2);color:var(--text);}
+
+@media (max-width:899px){
+  .riwayat-jenis button svg{display:none;}
+}
+@media (min-width:900px){
+  .riwayat-jenis{flex:1 1 0;}
+  #filterUnit{flex:0 0 200px;}
+  .rk{gap:16px;padding:18px 20px;}
+  .rk-ikon{width:38px;height:38px;}
+  .rk-nama{font-size:14.5px;}
+  .rk-pn{font-size:12.5px;}
+  .rk-qty b{font-size:21px;}
+  .rk-label{margin-top:9px;}
+  .rk-unit{font-size:11.5px;}
+  .rk-meta{grid-template-columns:1fr 1fr;gap:7px 24px;margin-top:12px;padding-right:36px;}
+  .rk-meta div{gap:8px;font-size:13px;}
+  .rk-meta em{font-size:12px;}
+  .rk-meta .mono{font-size:12.5px;}
+  .rk-panah{width:13px !important;height:13px !important;}
+  .rk-lainnya{right:12px;bottom:12px;}
+}
+
+
+/* =====================================================================
+   FORM AMBIL / TRANSFER / INPUT (form-desktop.js)
+   HP     : satu kolom seperti semula (judul bagian, panel kanan,
+            tombol status & tombol - / + disembunyikan)
+   Desktop: form dua kolom per bagian + panel ringkasan di kanan
+   ===================================================================== */
+.form-judul,.form-panel,.seg-status,.qs-btn,.who-v2{display:none;}
+.opsional{text-transform:none;font-weight:400;color:var(--text-muted);}
+.form-kartu .field > div[id$="_matches"]:empty{display:none;}
+
+@media (min-width:900px){
+  .form-v2{display:grid;grid-template-columns:minmax(0,1fr) var(--lebar-panel-form);gap:20px;align-items:start;max-width:var(--lebar-form-maks);}
+  .form-v2 .card{margin:0;padding:0;}
+
+  /* ---------- Form kiri ---------- */
+  .form-bagian{padding:22px 24px 6px;}
+  .form-bagian + .form-bagian{border-top:1px solid var(--border);}
+  .form-judul,.fp-judul{display:block;margin:0 0 16px;font:600 11px 'Inter',sans-serif;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;}
+  .form-grid .span2{grid-column:1/-1;}
+  .form-v2 .field{margin-bottom:16px;}
+  .form-v2 label{display:block;font-size:12.5px;font-weight:500;margin-bottom:7px;}
+  .form-v2 .field input,.form-v2 .field select{height:46px;margin:0;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);font-size:14.5px;padding:0 14px;}
+  .form-v2 .wo-inp input{padding-left:38px;}
+  /* Teks bebas pakai Inter (tetap kapital); parts number & WO tetap mono */
+  #ax_note,#tf_loc,#tf_note,#in_desc,#in_loc,#in_remarks{font-family:'Inter',sans-serif;}
+  .form-v2 .field input::placeholder{font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;}
+  .form-v2 .field input:focus,.form-v2 .field select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);}
+  #ax_found,#tf_found{display:none;}
+
+  /* Status: tombol RFU / NOT RFU menggantikan <select> */
+  #tf_status,#in_status{display:none;}
+  .seg-status{display:flex;gap:2px;height:46px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);}
+  .seg-status button{flex:1;border:none;background:none;border-radius:var(--radius-sm);font:500 13.5px 'Inter',sans-serif;color:var(--text-muted);cursor:pointer;}
+  .seg-status button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
+
+  /* Qty: tombol - / + di kiri-kanan */
+  .qty-step{display:grid;grid-template-columns:46px 1fr 46px;height:46px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);overflow:hidden;}
+  .qty-step:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);}
+  .qs-btn{display:grid;place-items:center;border:none;background:none;color:var(--text-muted);cursor:pointer;}
+  .qs-btn:hover{background:var(--surface-2);color:var(--text);}
+  .qs-btn svg{width:16px;height:16px;}
+  .qs-btn:first-child{border-right:1px solid var(--border);}
+  .qs-btn:last-child{border-left:1px solid var(--border);}
+  .form-v2 .qty-step input{height:44px;border:none;border-radius:0;box-shadow:none !important;text-align:center;font:500 16px 'Inter',sans-serif;padding:0;-moz-appearance:textfield;}
+  .qty-step input::-webkit-outer-spin-button,.qty-step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+
+  /* Bawah: nama + NRP di kiri, tombol simpan di kanan */
+  .form-kaki{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;border-top:1px solid var(--border);background:var(--surface-2);border-radius:0 0 var(--radius) var(--radius);}
+  .form-kaki .field{margin:0;}
+  .form-kaki label,.form-kaki .nama-login{display:none;}
+  .who-v2{display:flex;align-items:center;gap:11px;}
+  .who-ini{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--amber-dim);color:var(--amber);font:600 12px 'Inter',sans-serif;}
+  .who-nama{font-weight:500;font-size:14px;line-height:1.2;}
+  .who-nrp{font-size:11.5px;color:var(--text-muted);}
+  .who-v2 svg{width:15px;height:15px;color:var(--text-muted);margin-left:4px;}
+  .form-kaki .btn-block{width:auto;min-width:200px;height:44px;padding:0 28px;margin:0;}
+
+  /* ---------- Panel kanan ---------- */
+  .form-panel{display:block;}
+  .fp-bagian{padding:20px 22px;}
+  .fp-bagian + .fp-bagian{border-top:1px solid var(--border);}
+  .fp-judul.kecil{margin:0;font-size:10.5px;}
+  .fp-nama{font-weight:600;font-size:15.5px;line-height:1.3;}
+  .fp-pn{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
+  .fp-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;}
+  .fp-kosong{font-size:13px;color:var(--text-muted);}
+  .fp-baris{display:flex;justify-content:space-between;gap:12px;padding:9px 0;font-size:13px;border-top:1px solid var(--border);}
+  .fp-baris:first-child{border-top:none;padding-top:0;}
+  .fp-baris:last-child{padding-bottom:0;}
+  .fp-baris > span:first-child{color:var(--text-muted);}
+  .fp-baris b{font-weight:600;}
+  .fp-sub{margin-left:6px;font-size:12px;color:var(--text-muted);}
+  .fp-kurang{color:var(--red);}
+  .fp-rute{display:grid;grid-template-columns:20px 1fr;column-gap:12px;}
+  .fp-titik{display:flex;flex-direction:column;align-items:center;padding-top:4px;}
+  .fp-titik i{width:9px;height:9px;border-radius:50%;border:2px solid var(--text-muted);}
+  .fp-titik i.tujuan{border-color:var(--amber);background:var(--amber);}
+  .fp-titik s{flex:1;width:1px;background:var(--border-strong);margin:4px 0;}
+  .fp-rute-isi{padding-bottom:16px;}
+  .fp-rute-isi:last-child{padding-bottom:0;}
+  .fp-rute-isi .fp-label{margin-top:6px;}
+  .fp-lokasi{font-weight:600;font-size:14px;margin-top:2px;}
+  .fp-ada{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);}
+  .fp-ada:first-child{border-top:none;padding-top:0;}
+  .fp-ada:last-child{padding-bottom:0;}
+  .fp-ada-lok{font-weight:600;font-size:13.5px;}
+  .fp-ada .fp-label{margin-top:5px;}
+  .fp-ada.cocok .fp-ada-lok{color:var(--amber);}
+  .fp-ada-qty{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;line-height:1.1;}
 }

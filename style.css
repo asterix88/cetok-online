@@ -172,8 +172,8 @@
   @keyframes toastOut{from{opacity:1;}to{opacity:0;}}
   .filter-row{display:flex;gap:8px;margin-bottom:10px;}
   .filter-row select{margin-top:0;}
-  /* Tombol filter kustom menggantikan <select> bawaan browser (HP: bottom-sheet, desktop: popover) */
-  #stok_loc_filter,#stok_status_filter,#stok_urut{display:none;}
+  /* Tombol filter kustom menggantikan <select> bawaan browser (daftar pilihan: popover) */
+  #stok_loc_filter,#stok_unit_filter,#stok_status_filter,#stok_urut{display:none;}
   .filter-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;
     background:var(--surface-2);border:1px solid var(--border);color:var(--text);
     padding:10px 11px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;text-align:left;
@@ -514,8 +514,3 @@ td.ag-col b{font-weight:600;}
   #tab-stok .m-aging b{font-weight:600;color:var(--text);}
 }
 
-/* HP: tombol urutan turun ke baris sendiri supaya label filter tidak terpotong */
-@media (max-width:680px){
-  #tab-stok .filter-row{flex-wrap:wrap;}
-  #urutBtn{flex-basis:100%;}
-}
