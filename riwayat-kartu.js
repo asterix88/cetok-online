@@ -1,19 +1,16 @@
 // =====================================================================
-// riwayat-desktop.js -- Kartu Riwayat untuk layar desktop (>= 900px)
+// riwayat-kartu.js -- Kartu Riwayat (HP & desktop)
 //
-// Sesuai mockup riwayat-desktop.png:
+// Sesuai mockup riwayat-desktop.png dan riwayat-hp.png:
 //   - ikon jenis (Input / Ambil / Transfer) di kiri
 //   - nama part + parts number, label unit / status / WO
 //   - lokasi (transfer: asal -> tujuan), keterangan, nama + NRP, waktu
 //   - jenis + qty berwarna di kanan, tombol "..." (Edit) khusus admin
 //   - filter jenis berupa tombol Semua / Input / Ambil / Transfer
 //
-// HP tetap memakai kartu lama (kartuRiwayatHpHtml di script.js) sampai
-// mockup HP disetujui. File ini dimuat SETELAH script.js dan wo.js.
+// Bentuk kartunya sama; CSS (tata-letak.css) yang menyesuaikan ukuran
+// untuk HP. File ini dimuat SETELAH script.js dan wo.js.
 // =====================================================================
-
-const LEBAR_DESKTOP = '(min-width:900px)';
-const layarDesktop = window.matchMedia(LEBAR_DESKTOP);
 
 // Transfer dicatat sebagai baris 'keluar' dengan keterangan
 // "TRANSFER KE <lokasi tujuan> (<status>)" + " - <catatan>" kalau ada.
@@ -36,10 +33,6 @@ const IKON_LAINNYA = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5
 
 
 // ---------- Bantuan ----------
-
-function pakaiKartuRiwayatDesktop(){
-  return layarDesktop.matches;
-}
 
 // 'input' | 'ambil' | 'transfer'
 function jenisRiwayat(t){
@@ -65,7 +58,7 @@ function waktuRiwayat(ts){
 
 // ---------- Kartu ----------
 
-function kartuRiwayatDesktopHtml(t){
+function kartuRiwayatHtml(t){
   const jenis = jenisRiwayat(t);
   const info = JENIS_RIWAYAT[jenis];
 
@@ -121,6 +114,3 @@ document.querySelectorAll('#riwayatJenis button').forEach(b => {
   });
 });
 document.getElementById('filterType').addEventListener('change', tandaiTombolJenis);
-
-// Pindah ukuran layar melewati batas desktop -> gambar ulang kartu
-layarDesktop.addEventListener('change', () => renderRiwayat());
