@@ -108,102 +108,131 @@
   </nav>
   <main>
     <section id="tab-stok">
-      <div class="field"><input id="stok_search" placeholder="Cari parts number, nama part, atau WO..."></div>
-      <div class="filter-row">
-        <select id="stok_loc_filter"><option value="">Semua Lokasi</option></select>
-        <select id="stok_status_filter">
+      <!-- Alat stok (stok-filter.js). Nilai filter tetap disimpan di <select>
+           tersembunyi supaya logika filter & export tidak berubah. -->
+      <div class="stok-alat" id="stokAlat">
+        <div class="field stok-cari"><input id="stok_search" placeholder="Cari parts number, nama part, atau WO"></div>
+        <div class="stok-status" id="stokStatus" role="group" aria-label="Filter status">
+          <button type="button" data-status="" class="on">Semua</button>
+          <button type="button" data-status="RFU">RFU</button>
+          <button type="button" data-status="NOT RFU">NOT RFU</button>
+        </div>
+        <button type="button" class="filter-btn" id="locBtn" data-for="stok_loc_filter" data-title="Filter Lokasi"><span class="fb-pre">Lokasi</span><span class="fb-label">Semua</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="filter-btn" id="unitBtn" data-for="stok_unit_filter" data-title="Filter Unit"><span class="fb-pre">Unit</span><span class="fb-label">Semua</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="filter-btn" id="urutBtn" data-for="stok_urut" data-title="Urutkan"><svg class="fb-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"/><path d="m3 16 4 4 4-4"/><path d="M17 20V4"/><path d="m13 8 4-4 4 4"/></svg><span class="fb-label">Terbaru</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <select id="stok_loc_filter" hidden><option value="">Semua Lokasi</option></select>
+        <select id="stok_unit_filter" hidden><option value="">Semua Unit</option></select>
+        <select id="stok_status_filter" hidden>
           <option value="">Semua Status</option>
           <option value="RFU">RFU</option>
           <option value="NOT RFU">NOT RFU</option>
           <option value="EMPTY">Tanpa Status</option>
         </select>
-        <select id="stok_urut">
+        <select id="stok_urut" hidden>
           <option value="">Terbaru</option>
           <option value="aging">Aging terlama</option>
         </select>
-        <button type="button" class="filter-btn" id="locBtn" data-for="stok_loc_filter" data-title="Filter Lokasi"><span class="fb-label">Semua Lokasi</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <button type="button" class="filter-btn" id="statusBtn" data-for="stok_status_filter" data-title="Filter Status"><span class="fb-label">Semua Status</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <button type="button" class="filter-btn" id="urutBtn" data-for="stok_urut" data-title="Urutkan"><span class="fb-label">Terbaru</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
-        <div class="sheet-pills" id="pillsSemua" style="margin-bottom:0;"></div>
-        <button type="button" id="btnExportStok" class="btn btn-outline" style="display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12.5px;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
-          Export Excel
-        </button>
-      </div>
-      <div class="cat-label">Excavator</div>
-      <div class="sheet-pills" id="pillsExcavator"></div>
-      <div class="cat-label">Bulldozer</div>
-      <div class="sheet-pills" id="pillsBulldozer"></div>
       <div class="card">
         <table>
           <thead><tr><th>No</th><th>Parts Number</th><th class="part-col"><span class="th-hp">Parts Description</span><span class="th-desktop">Part</span></th><th class="unit-col">Unit</th><th>Status</th><th class="wo-col">WO</th><th>Lokasi</th><th style="text-align:right;">Qty</th><th class="ket-col">Keterangan</th><th class="ag-col">Aging</th></tr></thead>
           <tbody id="stokTableBody"></tbody>
         </table>
+        <div id="stokKartu" class="stok-kartu"></div>
         <div id="stokEmpty"></div>
         <div class="pagination" id="stokPagination"></div>
       </div>
+      <div class="stok-export">
+        <button type="button" id="btnExportStok" class="btn btn-outline">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
+          Export Excel
+        </button>
+      </div>
     </section>
     <section id="tab-ambil" style="display:none;">
-      <div class="card">
-        <!-- No. WO paling atas: ketik WO, part yang cocok langsung disarankan (wo.js) -->
-        <div class="field"><label for="ax_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="ax_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="Ketik nomor WO, cth: 200041587"></div><div id="ax_wo_matches"></div></div>
-        <div class="field"><label>Parts Number</label><input id="ax_pn" class="mono" placeholder="Ketik parts number atau nama part..."></div>
-        <div id="ax_matches"></div>
-        <div id="ax_found"></div>
-        <div class="field"><label>Quantity Diambil</label><input id="ax_qty" type="number" min="1" class="mono" placeholder="0"></div>
-        <div class="field"><label>Keterangan Keperluan</label><input id="ax_note" class="mono" placeholder="cth: Perbaikan unit E5138"></div>
-        <div class="field"><label>Nama Pengambil</label><input id="ax_nama" class="mono nama-login" readonly tabindex="-1"></div>
-        <button class="btn btn-red btn-block" id="btnAmbil" onclick="ambilBarang()">Simpan Ambil Barang</button>
+      <!-- Desktop: form kiri + panel "Part dipilih" kanan (form-desktop.js). HP: satu kolom. -->
+      <div class="form-v2">
+      <div class="card form-kartu">
+        <div class="form-bagian"><h3 class="form-judul">Part</h3><div class="form-grid">
+          <!-- No. WO paling atas: ketik WO, part yang cocok langsung disarankan (wo.js) -->
+          <div class="field"><label for="ax_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="ax_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="Ketik nomor WO, cth: 200041587"></div><div id="ax_wo_matches"></div></div>
+          <div class="field"><label>Parts Number</label><input id="ax_pn" class="mono" placeholder="Ketik parts number atau nama part..."><div id="ax_matches"></div></div>
+          <div id="ax_found" class="span2"></div>
+        </div></div>
+        <div class="form-bagian"><h3 class="form-judul">Pengambilan</h3><div class="form-grid">
+          <div class="field"><label>Quantity Diambil</label><div class="qty-step"><button type="button" class="qs-btn" data-langkah="-1" data-untuk="ax_qty" aria-label="Kurangi" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button><input id="ax_qty" type="number" min="1" class="mono" placeholder="0"><button type="button" class="qs-btn" data-langkah="1" data-untuk="ax_qty" aria-label="Tambah" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+          <div class="field"><label>Keterangan Keperluan</label><input id="ax_note" class="mono" placeholder="cth: Perbaikan unit E5138"></div>
+        </div></div>
+        <div class="form-kaki">
+          <div class="field"><label>Nama Pengambil</label><input id="ax_nama" class="mono nama-login" readonly tabindex="-1"><div class="who-v2"><span class="who-ini"></span><div><div class="who-nama"></div><span class="who-nrp mono"></span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
+          <button class="btn btn-red btn-block" id="btnAmbil" onclick="ambilBarang()">Simpan Ambil Barang</button>
+        </div>
+      </div>
+      <aside class="card form-panel" id="ax_panel"></aside>
       </div>
     </section>
     <section id="tab-transfer" style="display:none;">
-      <div class="card">
-        <div class="field"><label>Parts Number</label><input id="tf_pn" class="mono" placeholder="Ketik parts number atau nama part..."></div>
-        <div id="tf_matches"></div>
-        <div id="tf_found"></div>
-        <div class="field"><label>Quantity Dipindah</label><input id="tf_qty" type="number" min="1" class="mono" placeholder="0"></div>
-        <div class="field"><label>Lokasi Tujuan</label><input id="tf_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Trackindo, Rak abu, Laydown"></div>
-        <!-- Kosong = WO lama ikut pindah. Diisi = WO baru menggantikan. -->
-        <div class="field"><label for="tf_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="tf_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: 200041587"></div></div>
-        <div class="field"><label>Status Tujuan</label>
-          <select id="tf_status">
-            <option value="RFU">RFU</option>
-            <option value="NOT RFU">NOT RFU</option>
-          </select>
+      <div class="form-v2">
+      <div class="card form-kartu">
+        <div class="form-bagian"><h3 class="form-judul">Part</h3><div class="form-grid">
+          <div class="field span2"><label>Parts Number</label><input id="tf_pn" class="mono" placeholder="Ketik parts number atau nama part..."><div id="tf_matches"></div></div>
+          <div id="tf_found" class="span2"></div>
+        </div></div>
+        <div class="form-bagian"><h3 class="form-judul">Tujuan</h3><div class="form-grid">
+          <div class="field"><label>Lokasi Tujuan</label><input id="tf_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Trackindo, Rak abu, Laydown"></div>
+          <div class="field"><label>Status Tujuan</label>
+            <select id="tf_status">
+              <option value="RFU">RFU</option>
+              <option value="NOT RFU">NOT RFU</option>
+            </select><div class="seg-status" data-untuk="tf_status"><button type="button" data-nilai="RFU">RFU</button><button type="button" data-nilai="NOT RFU">NOT RFU</button></div>
+          </div>
+          <div class="field"><label>Quantity Dipindah</label><div class="qty-step"><button type="button" class="qs-btn" data-langkah="-1" data-untuk="tf_qty" aria-label="Kurangi" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button><input id="tf_qty" type="number" min="1" class="mono" placeholder="0"><button type="button" class="qs-btn" data-langkah="1" data-untuk="tf_qty" aria-label="Tambah" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+          <!-- Kosong = WO lama ikut pindah. Diisi = WO baru menggantikan. -->
+          <div class="field"><label for="tf_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="tf_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: 200041587"></div></div>
+          <div class="field span2"><label>Keterangan <span class="opsional">(opsional)</span></label><input id="tf_note" class="mono" placeholder="cth: Kirim ke vendor untuk perbaikan"></div>
+        </div></div>
+        <div class="form-kaki">
+          <div class="field"><label>Nama</label><input id="tf_nama" class="mono nama-login" readonly tabindex="-1"><div class="who-v2"><span class="who-ini"></span><div><div class="who-nama"></div><span class="who-nrp mono"></span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
+          <button class="btn btn-amber btn-block" id="btnTransfer" onclick="transferBarang()">Simpan Transfer</button>
         </div>
-        <div class="field"><label>Keterangan <span style="text-transform:none;font-weight:400;color:var(--text-muted);">(opsional)</span></label><input id="tf_note" class="mono" placeholder="cth: Kirim ke vendor untuk perbaikan"></div>
-        <div class="field"><label>Nama</label><input id="tf_nama" class="mono nama-login" readonly tabindex="-1"></div>
-        <button class="btn btn-amber btn-block" id="btnTransfer" onclick="transferBarang()">Simpan Transfer</button>
+      </div>
+      <aside class="card form-panel" id="tf_panel"></aside>
       </div>
     </section>
     <section id="tab-input" style="display:none;">
-      <div class="card">
-        <div class="field"><label>Unit Model</label><select id="in_unit"></select></div>
-        <div class="field"><label>Parts Number</label><input id="in_pn" class="mono" placeholder="cth: 07040-11209"></div>
-        <div id="in_matches"></div>
-        <div class="field"><label>Parts Description</label><input id="in_desc" class="mono" placeholder="cth: Plug final drive"></div>
-        <div class="field"><label for="in_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="in_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: 200041587"></div></div>
-        <div class="field"><label>Lokasi Penyimpanan</label><input id="in_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Rak abu, Lemari hijau, Laydown"></div>
-        <datalist id="loc_datalist"></datalist>
-        <div class="field"><label>Status</label>
-          <select id="in_status">
-            <option value="RFU" selected>RFU</option>
-            <option value="NOT RFU">NOT RFU</option>
-          </select>
+      <div class="form-v2">
+      <div class="card form-kartu">
+        <div class="form-bagian"><h3 class="form-judul">Part</h3><div class="form-grid">
+          <div class="field"><label>Unit Model</label><select id="in_unit"></select></div>
+          <div class="field"><label>Parts Number</label><input id="in_pn" class="mono" placeholder="cth: 07040-11209"><div id="in_matches"></div></div>
+          <div class="field span2"><label>Parts Description</label><input id="in_desc" class="mono" placeholder="cth: Plug final drive"></div>
+        </div></div>
+        <div class="form-bagian"><h3 class="form-judul">Penyimpanan</h3><div class="form-grid">
+          <div class="field"><label>Lokasi Penyimpanan</label><input id="in_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Rak abu, Lemari hijau, Laydown"></div>
+          <div class="field"><label for="in_wo">No. WO <span class="opsional">(opsional)</span></label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="in_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: 200041587"></div></div>
+          <datalist id="loc_datalist"></datalist>
+          <div class="field"><label>Status</label>
+            <select id="in_status">
+              <option value="RFU" selected>RFU</option>
+              <option value="NOT RFU">NOT RFU</option>
+            </select><div class="seg-status" data-untuk="in_status"><button type="button" data-nilai="RFU">RFU</button><button type="button" data-nilai="NOT RFU">NOT RFU</button></div>
+          </div>
+          <div class="field"><label>Quantity</label><div class="qty-step"><button type="button" class="qs-btn" data-langkah="-1" data-untuk="in_qty" aria-label="Kurangi" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button><input id="in_qty" type="number" min="1" class="mono" placeholder="0"><button type="button" class="qs-btn" data-langkah="1" data-untuk="in_qty" aria-label="Tambah" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+          <div class="field span2"><label>Remarks <span class="opsional">(opsional)</span></label><input id="in_remarks" class="mono" placeholder="cth: kondisi barang, catatan tambahan..."></div>
+        </div></div>
+        <div class="form-kaki">
+          <div class="field"><label>Nama Penginput</label><input id="in_nama" class="mono nama-login" readonly tabindex="-1"><div class="who-v2"><span class="who-ini"></span><div><div class="who-nama"></div><span class="who-nrp mono"></span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>
+          <button class="btn btn-green btn-block" id="btnInput" onclick="inputBarang()">Simpan Input Barang</button>
         </div>
-        <div class="field"><label>Quantity</label><input id="in_qty" type="number" min="1" class="mono" placeholder="0"></div>
-        <div class="field"><label>Remarks <span style="text-transform:none;font-weight:400;color:var(--text-muted);">(opsional)</span></label><input id="in_remarks" class="mono" placeholder="cth: kondisi barang, catatan tambahan..."></div>
-        <div class="field"><label>Nama Penginput</label><input id="in_nama" class="mono nama-login" readonly tabindex="-1"></div>
-        <button class="btn btn-green btn-block" id="btnInput" onclick="inputBarang()">Simpan Input Barang</button>
+      </div>
+      <aside class="card form-panel" id="in_panel"></aside>
       </div>
     </section>
     <section id="tab-riwayat" style="display:none;">
       <div class="field"><input id="riwayat_search" placeholder="Cari parts number, nama part, atau WO..."></div>
       <div class="filter-row">
         <select id="filterType"><option value="">Semua Jenis</option><option value="masuk">Input</option><option value="keluar">Ambil</option><option value="transfer">Transfer</option></select>
-        <!-- Desktop: filter jenis berupa tombol (riwayat-desktop.js) -->
+        <!-- Filter jenis berupa tombol (riwayat-kartu.js) -->
         <div class="riwayat-jenis" id="riwayatJenis">
           <button type="button" data-jenis="" class="on">Semua</button>
           <button type="button" data-jenis="masuk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Input</button>
@@ -224,6 +253,7 @@
   <div class="sheet" role="dialog" aria-modal="true">
     <div class="sheet-grip"></div>
     <div class="sheet-head"><h3 id="filterSheetTitle">Filter</h3><button type="button" class="sheet-close" id="filterSheetClose" aria-label="Tutup">&times;</button></div>
+    <div class="sheet-cari" id="filterSheetCariWrap"><input id="filterSheetCari" placeholder="Cari" autocomplete="off"></div>
     <div class="sheet-list" id="filterSheetList" role="listbox"></div>
   </div>
 </div>
@@ -258,7 +288,10 @@
 <script src="script.js"></script>
 <script src="wo.js"></script>
 <script src="aging.js"></script>
-<script src="riwayat-desktop.js"></script>
+<script src="riwayat-kartu.js"></script>
+<script src="stok-kartu.js"></script>
+<script src="stok-filter.js"></script>
+<script src="form-desktop.js"></script>
 <script src="auth.js"></script>
 </body>
   </html>

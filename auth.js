@@ -258,6 +258,7 @@ function isiNamaOtomatis(){
   ['ax_nama', 'tf_nama', 'in_nama'].forEach(id=>{
     document.getElementById(id).value = namaLogin();
   });
+  perbaruiFormDesktop();   // form-desktop.js: nama + NRP di bawah form desktop
 }
 
 

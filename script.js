@@ -333,22 +333,8 @@ function buildSelectors(){
     filterUnit.appendChild(opt);
   });
 
-  const pillsSemua = document.getElementById('pillsSemua');
-  const btnSemua = document.createElement('button');
-  btnSemua.textContent = 'Semua Unit'; btnSemua.dataset.code = 'ALL';
-  if(currentSheet==='ALL') btnSemua.classList.add('active');
-  btnSemua.onclick = ()=>{ currentSheet = 'ALL'; stokKosongOnly = false; stokPage = 1; renderStokSheet(); };
-  pillsSemua.appendChild(btnSemua);
-
-  const pillsExc = document.getElementById('pillsExcavator');
-  const pillsBull = document.getElementById('pillsBulldozer');
-  UNIT_MODELS.forEach(u=>{
-    const btn = document.createElement('button');
-    btn.textContent = u.code; btn.dataset.code = u.code;
-    if(u.code===currentSheet) btn.classList.add('active');
-    btn.onclick = ()=>{ currentSheet = u.code; stokKosongOnly = false; stokPage = 1; renderStokSheet(); };
-    (u.cat==='Excavator'?pillsExc:pillsBull).appendChild(btn);
-  });
+  // Filter unit tab Stok: dikelompokkan Excavator / Bulldozer
+  populateUnitSelectGrouped('stok_unit_filter');
 }
 // Dipakai buat isi <select id="in_unit">, dan dipakai ulang buat dropdown unit
 // di modal Edit Riwayat (er_unit).
@@ -365,6 +351,7 @@ function populateUnitSelectGrouped(selectId){
 
 function render(){
   renderStats(); renderStokSheet();
+  perbaruiFormDesktop();   // form-desktop.js: panel kanan ikut data terbaru
   loadRiwayatPage(1); // transaksi baru saja tersimpan -> balik ke halaman 1 riwayat
 }
 function renderStats(){
@@ -405,61 +392,98 @@ function populateLocationFilter(){
 document.getElementById('stok_loc_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
 document.getElementById('stok_status_filter').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
 document.getElementById('stok_urut').addEventListener('change', ()=>{ stokPage = 1; renderStokSheet(); });
+document.getElementById('stok_unit_filter').addEventListener('change', (e)=>{
+  currentSheet = e.target.value || 'ALL'; stokKosongOnly = false; stokPage = 1; renderStokSheet();
+});
 
-// ---------- Bottom-sheet filter (tampilan HP) ----------
-// <select> asli tetap jadi sumber nilai (dipakai semua logika filter & export);
-// di HP select disembunyikan dan diganti tombol + sheet yang lebih ringkas.
+// ---------- Daftar pilihan filter (popover di bawah tombol) ----------
+// <select> tersembunyi tetap jadi sumber nilai (dipakai semua logika filter & export);
+// tombol + daftar pilihan ini hanya tampilannya.
 function syncFilterButtons(){
-  [['stok_loc_filter','locBtn'],['stok_status_filter','statusBtn'],['stok_urut','urutBtn']].forEach(([selId,btnId])=>{
+  document.getElementById('stok_unit_filter').value = currentSheet === 'ALL' ? '' : currentSheet;
+  [['stok_loc_filter','locBtn'],['stok_unit_filter','unitBtn'],['stok_urut','urutBtn']].forEach(([selId,btnId])=>{
     const sel = document.getElementById(selId), btn = document.getElementById(btnId);
     if(!sel || !btn) return;
     const opt = sel.selectedOptions[0];
-    btn.querySelector('.fb-label').textContent = opt ? opt.textContent : '';
+    // Tombol berawalan ("Lokasi", "Unit") cukup menampilkan "Semua" kalau belum dipilih
+    const pakaiAwalan = !!btn.querySelector('.fb-pre');
+    btn.querySelector('.fb-label').textContent = (pakaiAwalan && !sel.value) ? 'Semua' : (opt ? opt.textContent : '');
     btn.classList.toggle('active', !!sel.value);
   });
+  tandaiStatusStok();   // stok-filter.js
 }
 let filterSheetSel = null, filterSheetBtn = null;
-const isDesktopFilter = ()=>window.matchMedia('(min-width:681px)').matches;
+const LEBAR_POPOVER_MIN = 280;    // px, lebar minimum daftar pilihan filter
+const BATAS_POPOVER_HP = 680;     // px, di bawah ini daftar selebar layar
+// Kunci hitungan jumlah part per pilihan, sesuai jenis filter
+const KUNCI_FILTER = {
+  stok_loc_filter:    p => (p.loc || '').trim().toLowerCase(),
+  stok_unit_filter:   p => p.unit,
+  stok_status_filter: p => p.status ? String(p.status).toUpperCase() : 'EMPTY',
+};
+const LEWATI_FILTER = { stok_loc_filter:{loc:true}, stok_unit_filter:{unit:true}, stok_status_filter:{status:true} };
+const FILTER_BISA_DICARI = ['stok_loc_filter', 'stok_unit_filter'];
+
 function openFilterSheet(btn){
-  const selId = btn.dataset.for, title = btn.dataset.title;
+  const selId = btn.dataset.for;
   const sel = document.getElementById(selId);
-  const isLoc = selId === 'stok_loc_filter';
-  const isUrut = selId === 'stok_urut';   // pilihan urutan: tanpa angka jumlah part
+  const kunci = KUNCI_FILTER[selId];   // urutan tidak punya angka jumlah
   filterSheetSel = sel;
   filterSheetBtn = btn;
   // Jumlah part per opsi, mengikuti filter lain yang sedang aktif
-  const rows = getFilteredStokRows(isLoc ? {loc:true} : {status:true});
+  const rows = getFilteredStokRows(LEWATI_FILTER[selId] || {});
   const counts = new Map();
-  rows.forEach(p=>{
-    const k = isLoc ? (p.loc||'').trim().toLowerCase() : (p.status ? String(p.status).toUpperCase() : 'EMPTY');
-    counts.set(k, (counts.get(k)||0) + 1);
-  });
-  document.getElementById('filterSheetTitle').textContent = title;
+  if(kunci) rows.forEach(p=>{ const k = kunci(p); counts.set(k, (counts.get(k)||0) + 1); });
+
+  let grupSebelum = null;
   document.getElementById('filterSheetList').innerHTML = [...sel.options].map(o=>{
+    // Judul grup (Excavator / Bulldozer) untuk pilihan unit
+    const grup = o.parentElement.tagName === 'OPTGROUP' ? o.parentElement.label : null;
+    const judul = grup && grup !== grupSebelum ? `<div class="sheet-grup">${esc(grup)}</div>` : '';
+    grupSebelum = grup;
     const n = o.value === '' ? rows.length : (counts.get(o.value)||0);
-    const label = (!isLoc && (o.value==='RFU' || o.value==='NOT RFU')) ? statusBadge(o.value) : esc(o.textContent);
-    const cls = 'sheet-item' + (o.value===sel.value ? ' active' : '') + (n===0 && o.value!=='' ? ' zero' : '');
-    return `<div class="${cls}" role="option" data-val="${esc(o.value)}"><span>${label}</span>${isUrut ? '' : `<span class="cnt">${n}</span>`}</div>`;
+    const cls = 'sheet-item' + (o.value===sel.value ? ' active' : '') + (kunci && n===0 && o.value!=='' ? ' zero' : '');
+    return `${judul}<div class="${cls}" role="option" data-val="${esc(o.value)}" data-cari="${esc(o.textContent.toLowerCase())}"><span>${esc(o.textContent)}</span>${kunci ? `<span class="cnt">${n}</span>` : ''}</div>`;
   }).join('');
+
+  const cari = document.getElementById('filterSheetCari');
+  const bisaDicari = FILTER_BISA_DICARI.includes(selId);
+  document.getElementById('filterSheetCariWrap').hidden = !bisaDicari;
+  cari.value = '';
+  cari.placeholder = 'Cari ' + (btn.querySelector('.fb-pre') || {textContent:''}).textContent.toLowerCase();
+
+  // Daftar muncul tepat di bawah tombol. Di HP selebar kolom alat stok.
   const ov = document.getElementById('filterSheet');
   const sheet = ov.querySelector('.sheet');
-  if(isDesktopFilter()){
-    // Desktop: popover tepat di bawah tombol
-    const r = btn.getBoundingClientRect();
-    const w = Math.max(r.width, 280);
-    const top = r.bottom + 6;
-    sheet.style.width = w + 'px';
-    sheet.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
-    sheet.style.top = top + 'px';
-    sheet.style.maxHeight = Math.max(160, Math.min(window.innerHeight * 0.6, window.innerHeight - top - 12)) + 'px';
+  const r = btn.getBoundingClientRect();
+  const top = r.bottom + 6;
+  let left, w;
+  if(window.innerWidth <= BATAS_POPOVER_HP){
+    const alat = document.getElementById('stokAlat').getBoundingClientRect();
+    left = alat.left; w = alat.width;
   } else {
-    ['width','left','top','maxHeight'].forEach(k=>sheet.style[k]='');
+    w = Math.max(r.width, LEBAR_POPOVER_MIN);
+    left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
   }
+  sheet.style.width = w + 'px';
+  sheet.style.left = left + 'px';
+  sheet.style.top = top + 'px';
+  sheet.style.maxHeight = Math.max(160, Math.min(window.innerHeight * 0.6, window.innerHeight - top - 12)) + 'px';
+
   btn.setAttribute('aria-expanded','true');
   ov.style.display = 'flex';
   ov.setAttribute('aria-hidden','false');
   requestAnimationFrame(()=>ov.classList.add('open'));
+  if(bisaDicari && window.innerWidth > BATAS_POPOVER_HP) cari.focus();
 }
+// Ketik di kolom cari -> sembunyikan pilihan yang tidak cocok
+document.getElementById('filterSheetCari').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#filterSheetList .sheet-item').forEach(it=>{
+    it.hidden = !!q && it.dataset.val !== '' && !it.dataset.cari.includes(q);
+  });
+  document.querySelectorAll('#filterSheetList .sheet-grup').forEach(g=>{ g.hidden = !!q; });
+});
 function closeFilterSheet(){
   const ov = document.getElementById('filterSheet');
   if(!ov.classList.contains('open')) return;
@@ -468,7 +492,7 @@ function closeFilterSheet(){
   if(filterSheetBtn) filterSheetBtn.setAttribute('aria-expanded','false');
   setTimeout(()=>{ if(!ov.classList.contains('open')) ov.style.display = 'none'; }, 240);
 }
-['locBtn','statusBtn','urutBtn'].forEach(id=>{
+['locBtn','unitBtn','urutBtn'].forEach(id=>{
   const btn = document.getElementById(id);
   btn.setAttribute('aria-expanded','false');
   btn.addEventListener('click', ()=>{
@@ -480,11 +504,10 @@ function closeFilterSheet(){
 });
 // Popover desktop ikut tertutup kalau halaman di-scroll atau jendela diubah ukurannya
 window.addEventListener('scroll', (e)=>{
-  if(!isDesktopFilter()) return;
   if(e.target && e.target.nodeType===1 && e.target.closest('#filterSheetList')) return;
   closeFilterSheet();
 }, true);
-window.addEventListener('resize', ()=>{ if(isDesktopFilter()) closeFilterSheet(); });
+window.addEventListener('resize', closeFilterSheet);
 document.getElementById('filterSheetList').addEventListener('click', (e)=>{
   const item = e.target.closest('.sheet-item');
   if(!item || !filterSheetSel) return;
@@ -499,7 +522,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeFilterShee
 function getFilteredStokRows(skip){
   skip = skip || {};
   const q = document.getElementById('stok_search').value.trim().toLowerCase();
-  let rows = currentSheet==='ALL' ? [...parts] : parts.filter(p=>p.unit===currentSheet);
+  let rows = (currentSheet==='ALL' || skip.unit) ? [...parts] : parts.filter(p=>p.unit===currentSheet);
   if(q){
     rows = rows.filter(p=>p.pn.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || (p.wo || '').includes(q));
   }
@@ -543,7 +566,6 @@ function fmtPN(pn, q){
 }
 function renderStokSheet(){
   syncFilterButtons();
-  document.querySelectorAll('.sheet-pills button').forEach(b=>b.classList.toggle('active', b.dataset.code===currentSheet));
   const q = document.getElementById('stok_search').value.trim().toLowerCase();
   const tbody = document.getElementById('stokTableBody');
   const emptyEl = document.getElementById('stokEmpty');
@@ -553,6 +575,7 @@ function renderStokSheet(){
 
   if(rows.length===0){
     tbody.innerHTML='';
+    document.getElementById('stokKartu').innerHTML='';
     const locLabel = locFilter ? ` di lokasi "<strong>${esc(document.getElementById('stok_loc_filter').selectedOptions[0].textContent)}</strong>"` : '';
     const kosongLabel = stokKosongOnly ? ' (stok kosong)' : '';
     let msg;
@@ -577,6 +600,7 @@ function renderStokSheet(){
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
   tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td class="part-col"><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td><td class="ag-col">${selAgingHtml(p)}</td></tr>`).join('');
+  document.getElementById('stokKartu').innerHTML = pageRows.map(p=>kartuStokHtml(p, q)).join('');   // stok-kartu.js (HP)
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -660,25 +684,6 @@ function renderPaginationControls(containerId, page, totalPages, totalCount, uni
   if(prevBtn) prevBtn.onclick = ()=>{ if(page>1) onChange(page-1); };
   if(nextBtn) nextBtn.onclick = ()=>{ if(page<totalPages) onChange(page+1); };
 }
-// Kartu riwayat tampilan HP (tampilan lama)
-function kartuRiwayatHpHtml(t){
-  return `
-    <div class="tx-row">
-      <div>
-        <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
-        <div class="tx-meta mono">${esc(t.pn)}</div>
-        <div class="tx-unit">${esc(t.unit)} &nbsp;${statusBadge(t.status)} ${chipWoHtml(t)}</div>
-        <div class="tx-meta">${ICON_PIN} ${esc(t.loc || '-')}</div>
-        ${t.note ? `<div class="tx-meta">${ICON_NOTE} ${esc(t.note)}</div>` : ''}
-        ${t.nama ? `<div class="tx-meta">${ICON_USER} ${esc(t.nama)}${t.nrp ? ` <span class="mono tx-nrp">${esc(t.nrp)}</span>` : ''}</div>` : ''}
-        <div class="tx-meta">${new Date(t.ts).toLocaleString('id-ID')}</div>
-        ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">Edit</button>` : ''}
-      </div>
-      <div style="text-align:right;">
-        <div class="tx-qty ${t.type}">${t.type==='masuk'?'INPUT':'AMBIL'} : ${t.type==='masuk'?'':'-'}${t.qty}</div>
-      </div>
-    </div>`;
-}
 function renderRiwayat(){
   // transactions di sini SUDAH berupa satu halaman (maks 50 baris) hasil
   // query ke Supabase di loadRiwayatPage() -- tidak difilter/diurutkan lagi
@@ -693,9 +698,8 @@ function renderRiwayat(){
     document.getElementById('riwayatPagination').innerHTML = '';
     return;
   }
-  // Desktop: kartu sesuai mockup (riwayat-desktop.js). HP: kartu lama.
-  const kartu = pakaiKartuRiwayatDesktop() ? kartuRiwayatDesktopHtml : kartuRiwayatHpHtml;
-  el.innerHTML = transactions.map(kartu).join('');
+  // Kartu sesuai mockup riwayat (riwayat-kartu.js), dipakai di HP & desktop
+  el.innerHTML = transactions.map(kartuRiwayatHtml).join('');
 
   renderPaginationControls('riwayatPagination', riwayatPage, riwayatPageCount, riwayatTotal, 'transaksi', (newPage)=>{
     loadRiwayatPage(newPage);
@@ -775,6 +779,7 @@ function pickInputSuggestion(id){
   document.getElementById('in_status').value = (p.status || 'RFU').toUpperCase();
   document.getElementById('in_matches').innerHTML='';
   updateInputButtonState();
+  perbaruiFormDesktop();
 }
 
 document.getElementById('ax_pn').addEventListener('input', function(e){
@@ -800,6 +805,7 @@ function selectAmbilPart(id){
   document.getElementById('ax_pn').value = p.pn;
   document.getElementById('ax_wo').value = p.wo || '';
   document.getElementById('ax_wo_matches').innerHTML='';
+  perbaruiFormDesktop();
   document.getElementById('ax_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''}${p.wo ? ' · WO <span class="mono">'+esc(p.wo)+'</span>' : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">${esc(p.unit)}</span></div>`;
   updateAmbilButtonState();
 }
@@ -858,6 +864,7 @@ function selectTransferPart(id){
   // ubah kalau memang mau sekalian ganti status saat transfer.
   document.getElementById('tf_status').value = (p.status || 'RFU').toUpperCase();
   updateTransferButtonState();
+  perbaruiFormDesktop();
 }
 async function transferBarang(){
   if(!tfSelectedPartId){ toast('Pilih parts number yang valid dari daftar stok'); return; }
@@ -918,9 +925,9 @@ function isTransferFormReady(){
   return !!tfSelectedPartId && qty > 0 && !!destLoc && !!nama;
 }
 // Kolom nama tidak ikut urutan Enter karena terisi otomatis dari akun login.
-const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_wo','in_loc','in_qty','in_remarks'];
+const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_loc','in_wo','in_status','in_qty','in_remarks'];
 const AMBIL_FIELD_ORDER = ['ax_wo','ax_pn','ax_qty','ax_note'];
-const TRANSFER_FIELD_ORDER = ['tf_pn','tf_qty','tf_loc','tf_wo','tf_status','tf_note'];
+const TRANSFER_FIELD_ORDER = ['tf_pn','tf_loc','tf_status','tf_qty','tf_wo','tf_note'];
 
 function setupEnterNavigation(order, isReadyFn, submitFn){
   order.forEach((id, idx)=>{
@@ -1064,8 +1071,8 @@ function paPart(){ return parts.find(p=>String(p.id)===String(paState.id)); }
 function paStatusClass(st){ const s=(st||'').toUpperCase(); return s==='RFU' ? 's-rfu' : s==='NOT RFU' ? 's-not' : ''; }
 
 function markSelectedRow(){
-  document.querySelectorAll('#stokTableBody tr[data-id]').forEach(tr=>{
-    tr.classList.toggle('pa-selected', paState.open && tr.dataset.id === String(paState.id));
+  document.querySelectorAll('#stokTableBody tr[data-id], #stokKartu .sk[data-id]').forEach(el=>{
+    el.classList.toggle('pa-selected', paState.open && el.dataset.id === String(paState.id));
   });
 }
 
