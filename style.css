@@ -121,7 +121,8 @@
     /* kolom yang digabung ke sel deskripsi / disembunyikan */
     #tab-stok th:nth-child(1),#tab-stok td:nth-child(1),   /* No */
     #tab-stok th:nth-child(2),#tab-stok td.pn,             /* Parts Number (tampil di sel deskripsi) */
-    #tab-stok th:nth-child(8),#tab-stok td:nth-child(8){display:none;} /* Keterangan (tampil sebagai NOTE) */
+    #tab-stok .ket-col{display:none;}                      /* Keterangan (tampil sebagai NOTE) */
+    #tab-stok .wo-col{display:none;}                       /* WO (tampil sebagai baris "WO ..." di sel deskripsi) */
     #tab-stok .m-pn{display:block;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--pn);word-break:break-all;}
     #tab-stok .m-name{display:block;font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;margin:2px 0 0;}
     #tab-stok .m-note{display:block;font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.3;}
@@ -463,3 +464,36 @@
 
   /* Kolom nama yang terisi otomatis dari akun login */
   input.nama-login{background:var(--surface-2);color:var(--text-muted);cursor:default;}
+
+
+/* =====================================================================
+   NOMOR WO (wo.js)
+   ===================================================================== */
+/* Kolom input WO: ikon dokumen kecil di kiri */
+.wo-inp{position:relative;}
+.wo-inp svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted);pointer-events:none;}
+.wo-inp input{padding-left:36px;letter-spacing:.6px;}
+
+/* Tab Stok */
+td.wo-col{white-space:nowrap;font-size:12px;}
+.wo-nil{color:var(--text-muted);}
+.m-wo{display:none;}
+@media (max-width:680px){
+  #tab-stok .m-wo{display:block;font-size:10.5px;color:var(--text-muted);margin-top:3px;}
+  #tab-stok .m-wo .mono{color:var(--text);font-size:10.5px;}
+}
+
+/* Saran part dari WO (tab Ambil) */
+.saran-wo{display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12.5px;}
+.saran-wo-info{display:block;margin-top:3px;font-size:11.5px;color:var(--text-muted);}
+.wo-tidak-ada{color:var(--red);font-size:12.5px;margin:4px 0 10px;}
+
+/* Chip WO di kartu riwayat */
+.wo-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text);padding:1px 6px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);vertical-align:middle;}
+.wo-chip b{font-size:9.5px;font-weight:700;letter-spacing:.5px;color:var(--text-muted);}
+.wo-chip .mono{font-size:11px;}
+.wo-chip .lama{color:var(--text-muted);text-decoration:line-through;}
+.wo-chip .wo-panah{width:11px;height:11px;color:var(--amber);}
+.wo-chip.kosong{border-style:dashed;color:var(--text-muted);}
+.tx-nrp{font-size:11px;opacity:.8;}
+

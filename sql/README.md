@@ -4,14 +4,26 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 
 | File | Isi | Status |
 |---|---|---|
-| `01-login-nrp.sql` | Tabel `karyawan`, fungsi login NRP, fungsi admin cek kolom `admin = 'ya'` | belum dijalankan |
+| `01-login-nrp.sql` | Tabel `karyawan`, fungsi login NRP, fungsi admin cek kolom `admin = 'ya'` | sudah dijalankan (23 Nov 2026) |
 | `02-data-karyawan.sql` | Daftar akun karyawan | **tidak disimpan di GitHub** (repo publik, berisi data pribadi) |
+| `03-wo.sql` | Kolom WO di stok & riwayat, NRP pencatat di riwayat, fungsi `ubah_wo_part` (admin) | belum dijalankan |
 
 ## Urutan pasang login NRP
 
 1. Jalankan `01-login-nrp.sql`.
 2. Jalankan `02-data-karyawan.sql` (disimpan terpisah, bukan di repo ini).
 3. Baru setelah itu merge kode web (`auth.js`, dll). Kalau kode web naik duluan, semua orang tidak bisa masuk.
+
+## Urutan pasang WO
+
+1. Jalankan `03-wo.sql` **sebelum** merge kode web WO. Kode web lama tetap jalan
+   setelah SQL ini (parameter baru semuanya boleh kosong), jadi aman dijalankan duluan.
+2. Merge kode web (`wo.js`, dll).
+3. Isi WO part lama lewat panel part > Edit data (khusus admin), atau sekaligus lewat SQL:
+
+```sql
+update public.stok set wo = '200041587' where id = '...';
+```
 
 ## Kelola akun sehari-hari (SQL Editor)
 

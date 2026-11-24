@@ -155,9 +155,10 @@ async function runScript(fnName, ...args){
   }
 
   if (fnName === 'inputBarang') {
-    const [unit, pn, desc, loc, qty, nama, status, remarks] = args;
+    const [unit, pn, desc, loc, qty, nama, status, remarks, wo] = args;
     const { error } = await sb.rpc('input_barang', {
-      p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_nama: nama, p_status: status, p_remarks: remarks
+      p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_nama: nama, p_status: status, p_remarks: remarks,
+      p_wo: wo || null
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan input barang');
     return runScript('getAllData');
@@ -177,9 +178,11 @@ async function runScript(fnName, ...args){
   }
 
   if (fnName === 'transferStok') {
-    const [id, qty, destLoc, destStatus, note, nama] = args;
+    // wo kosong = WO lama ikut pindah (diatur di RPC transfer_stok)
+    const [id, qty, destLoc, destStatus, note, nama, wo] = args;
     const { error } = await sb.rpc('transfer_stok', {
-      p_source_id: id, p_qty: qty, p_dest_loc: destLoc, p_dest_status: destStatus, p_note: note, p_nama: nama
+      p_source_id: id, p_qty: qty, p_dest_loc: destLoc, p_dest_status: destStatus, p_note: note, p_nama: nama,
+      p_wo: wo || null
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan transfer');
     return runScript('getAllData');
@@ -192,6 +195,13 @@ async function runScript(fnName, ...args){
       p_id: id, p_unit: unit, p_pn: pn, p_desc: desc, p_loc: loc, p_qty: qty, p_status: status, p_remarks: remarks
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan perubahan stok');
+    return runScript('getAllData');
+  }
+
+  if (fnName === 'ubahWoPart') {
+    const [id, wo] = args;
+    const { error } = await sb.rpc('ubah_wo_part', { p_id: id, p_wo: wo || null });
+    if (error) throw new Error(error.message || 'Gagal menyimpan WO');
     return runScript('getAllData');
   }
 
@@ -294,7 +304,10 @@ async function loadRiwayatPage(page){
       note: r.note,
       nama: r.nama,
       status: r.status,
-      loc: r.loc
+      loc: r.loc,
+      wo: r.wo,
+      wo_lama: r.wo_lama,
+      nrp: r.nrp
     }));
     riwayatTotal = data.total || 0;
     riwayatPageCount = Math.max(1, Math.ceil(riwayatTotal / RIWAYAT_PAGE_SIZE));
@@ -481,7 +494,7 @@ function getFilteredStokRows(skip){
   const q = document.getElementById('stok_search').value.trim().toLowerCase();
   let rows = currentSheet==='ALL' ? [...parts] : parts.filter(p=>p.unit===currentSheet);
   if(q){
-    rows = rows.filter(p=>p.pn.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+    rows = rows.filter(p=>p.pn.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || (p.wo || '').includes(q));
   }
   if(stokKosongOnly){
     rows = rows.filter(p=>Number(p.qty)<=0);
@@ -556,7 +569,7 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td><td class="${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td></tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td></tr>`).join('');
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -578,6 +591,7 @@ function exportStokExcel(){
     'Parts Description': p.desc,
     'Unit': p.unit,
     'Status': p.status || '-',
+    'WO': p.wo || '-',
     'Lokasi': p.loc || '-',
     'Qty': Number(p.qty),
     'Keterangan': p.remarks || '-'
@@ -586,7 +600,7 @@ function exportStokExcel(){
   const ws = XLSX.utils.json_to_sheet(dataForSheet);
   ws['!cols'] = [
     { wch: 5 }, { wch: 20 }, { wch: 34 }, { wch: 12 },
-    { wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 22 }
+    { wch: 10 }, { wch: 12 }, { wch: 26 }, { wch: 8 }, { wch: 22 }
   ];
 
   const wb = XLSX.utils.book_new();
@@ -656,10 +670,10 @@ function renderRiwayat(){
       <div>
         <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
         <div class="tx-meta mono">${esc(t.pn)}</div>
-        <div class="tx-unit">${esc(t.unit)} &nbsp;${statusBadge(t.status)}</div>
+        <div class="tx-unit">${esc(t.unit)} &nbsp;${statusBadge(t.status)} ${chipWoHtml(t)}</div>
         <div class="tx-meta">${ICON_PIN} ${esc(t.loc || '-')}</div>
         ${t.note ? `<div class="tx-meta">${ICON_NOTE} ${esc(t.note)}</div>` : ''}
-        ${t.nama ? `<div class="tx-meta">${ICON_USER} ${esc(t.nama)}</div>` : ''}
+        ${t.nama ? `<div class="tx-meta">${ICON_USER} ${esc(t.nama)}${t.nrp ? ` <span class="mono tx-nrp">${esc(t.nrp)}</span>` : ''}</div>` : ''}
         <div class="tx-meta">${new Date(t.ts).toLocaleString('id-ID')}</div>
         ${isAdmin ? `<button type="button" class="edit-btn tx-edit" onclick="openEditRiwayat('${t.id}')">Edit</button>` : ''}
       </div>
@@ -693,16 +707,18 @@ async function inputBarang(){
   const qty = Number(document.getElementById('in_qty').value);
   const remarks = document.getElementById('in_remarks').value.trim();
   const nama = document.getElementById('in_nama').value.trim();
+  const wo = bacaWo('in_wo');
   if(!pn || !desc){ toast('Parts Number dan Description wajib diisi'); return; }
+  if(!woBenar(wo)){ toast(PESAN_WO_SALAH); return; }
   if(!qty || qty<=0){ toast('Quantity harus lebih dari 0'); return; }
   if(!nama){ toast('Nama penginput wajib diisi'); return; }
 
   const btn = document.getElementById('btnInput'); btn.disabled = true; btn.textContent='Menyimpan...';
   try{
-    const data = await runScript('inputBarang', unit, pn, desc, loc, qty, nama, status, remarks);
+    const data = await runScript('inputBarang', unit, pn, desc, loc, qty, nama, status, remarks, wo);
     parts = data.parts; transactions = data.transactions;
     toast(`Input tersimpan untuk ${pn} di ${unit} (${status})`);
-    document.getElementById('in_pn').value=''; document.getElementById('in_desc').value=''; document.getElementById('in_loc').value=''; document.getElementById('in_qty').value=''; document.getElementById('in_status').value='RFU'; document.getElementById('in_remarks').value='';
+    document.getElementById('in_pn').value=''; document.getElementById('in_desc').value=''; document.getElementById('in_loc').value=''; document.getElementById('in_qty').value=''; document.getElementById('in_status').value='RFU'; document.getElementById('in_remarks').value=''; document.getElementById('in_wo').value='';
     currentSheet = unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
   btn.textContent='Simpan Input Barang';
@@ -767,7 +783,9 @@ function selectAmbilPart(id){
   if(!p) return;
   document.getElementById('ax_matches').innerHTML='';
   document.getElementById('ax_pn').value = p.pn;
-  document.getElementById('ax_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">${esc(p.unit)}</span></div>`;
+  document.getElementById('ax_wo').value = p.wo || '';
+  document.getElementById('ax_wo_matches').innerHTML='';
+  document.getElementById('ax_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''}${p.wo ? ' · WO <span class="mono">'+esc(p.wo)+'</span>' : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">${esc(p.unit)}</span></div>`;
   updateAmbilButtonState();
 }
 async function ambilBarang(){
@@ -786,7 +804,7 @@ async function ambilBarang(){
     const data = await runScript('ambilBarang', part.id, qty, note, nama);
     parts = data.parts; transactions = data.transactions;
     toast(`Ambil barang tersimpan untuk ${part.pn}`);
-    document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value='';
+    document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value=''; document.getElementById('ax_wo').value='';
     document.getElementById('ax_found').innerHTML=''; ambilSelectedPartId=null;
     currentSheet = part.unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
@@ -819,7 +837,8 @@ function selectTransferPart(id){
   if(!p) return;
   document.getElementById('tf_matches').innerHTML='';
   document.getElementById('tf_pn').value = p.pn;
-  document.getElementById('tf_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">${esc(p.unit)}</span></div>`;
+  siapkanWoTransfer(p);
+  document.getElementById('tf_found').innerHTML = `<div class="found-card"><div class="pn mono">${esc(p.pn)}</div><div class="nm">${esc(p.desc)}</div><div class="stok">Stok saat ini: <strong>${p.qty}</strong>${p.loc ? ' · Lokasi: '+esc(p.loc) : ''}${p.wo ? ' · WO <span class="mono">'+esc(p.wo)+'</span>' : ''} &nbsp;${statusBadge(p.status)}</div><span class="unit">${esc(p.unit)}</span></div>`;
   // Status tujuan default disamakan dengan status asal -- user tinggal
   // ubah kalau memang mau sekalian ganti status saat transfer.
   document.getElementById('tf_status').value = (p.status || 'RFU').toUpperCase();
@@ -834,20 +853,24 @@ async function transferBarang(){
   const destStatus = document.getElementById('tf_status').value;
   const note = document.getElementById('tf_note').value.trim();
   const nama = document.getElementById('tf_nama').value.trim();
+  const wo = bacaWo('tf_wo');
   if(!qty || qty<=0){ toast('Quantity harus lebih dari 0'); return; }
+  if(!woBenar(wo)){ toast(PESAN_WO_SALAH); return; }
   if(qty > part.qty){ toast(`Stok tidak cukup. Stok tersedia: ${part.qty}`); return; }
   if(!destLoc){ toast('Lokasi tujuan wajib diisi'); return; }
   if(!nama){ toast('Nama wajib diisi'); return; }
-  if(destLoc.toLowerCase() === (part.loc||'').trim().toLowerCase() && destStatus === (part.status||'').toUpperCase()){
-    toast('Lokasi & status tujuan sama dengan asal -- tidak ada yang perlu dipindah'); return;
+  const woTetap = !wo || wo === (part.wo || '');
+  if(destLoc.toLowerCase() === (part.loc||'').trim().toLowerCase() && destStatus === (part.status||'').toUpperCase() && woTetap){
+    toast('Lokasi, status & WO tujuan sama dengan asal -- tidak ada yang perlu dipindah'); return;
   }
 
   const btn = document.getElementById('btnTransfer'); btn.disabled=true; btn.textContent='Menyimpan...';
   try{
-    const data = await runScript('transferStok', part.id, qty, destLoc, destStatus, note, nama);
+    const data = await runScript('transferStok', part.id, qty, destLoc, destStatus, note, nama, wo);
     parts = data.parts; transactions = data.transactions;
     toast(`${qty} pcs ${part.pn} dipindah ke ${destLoc} (${destStatus})`);
     document.getElementById('tf_pn').value=''; document.getElementById('tf_qty').value=''; document.getElementById('tf_loc').value=''; document.getElementById('tf_note').value='';
+    siapkanWoTransfer(null);
     document.getElementById('tf_found').innerHTML=''; tfSelectedPartId=null;
     currentSheet = part.unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
@@ -880,9 +903,9 @@ function isTransferFormReady(){
   return !!tfSelectedPartId && qty > 0 && !!destLoc && !!nama;
 }
 // Kolom nama tidak ikut urutan Enter karena terisi otomatis dari akun login.
-const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_loc','in_qty','in_remarks'];
-const AMBIL_FIELD_ORDER = ['ax_pn','ax_qty','ax_note'];
-const TRANSFER_FIELD_ORDER = ['tf_pn','tf_qty','tf_loc','tf_status','tf_note'];
+const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_wo','in_loc','in_qty','in_remarks'];
+const AMBIL_FIELD_ORDER = ['ax_wo','ax_pn','ax_qty','ax_note'];
+const TRANSFER_FIELD_ORDER = ['tf_pn','tf_qty','tf_loc','tf_wo','tf_status','tf_note'];
 
 function setupEnterNavigation(order, isReadyFn, submitFn){
   order.forEach((id, idx)=>{
@@ -1119,6 +1142,7 @@ function paDetailHtml(p){
         <div><dt>Unit</dt><dd>${esc(p.unit)}</dd></div>
         <div><dt>Lokasi</dt><dd>${esc(p.loc||'-')}</dd></div>
         <div><dt>Status</dt><dd>${statusBadge(p.status)}</dd></div>
+        <div><dt>WO</dt><dd class="mono">${esc(p.wo||'-')}</dd></div>
       </dl>
     </div>
     ${p.remarks ? `<div class="pa-note"><span>Catatan</span>${esc(p.remarks)}</div>` : ''}
@@ -1163,6 +1187,8 @@ function paTransferHtml(p){
       <input id="pa_loc" class="mono" list="loc_datalist" autocomplete="off" placeholder="cth: Laydown, Lemari hijau">
       ${chips.length ? `<div class="pa-chips">${chips.map(l=>`<button type="button" class="pa-chip" data-pa="loc" data-loc="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}
     </div>
+    <div class="field"><label for="pa_wo">No. WO</label>
+      <input id="pa_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="${esc(p.wo || 'cth: ' + CONTOH_WO)}"></div>
     <div class="field"><label>Status di tujuan</label>
       <div class="pa-seg" role="radiogroup">
         <label class="rfu ${st==='RFU'?'on':''}"><input type="radio" name="pa_status" value="RFU" ${st==='RFU'?'checked':''}>RFU</label>
@@ -1191,6 +1217,7 @@ function paEditHtml(p){
           <option value="NOT RFU" ${st==='NOT RFU'?'selected':''}>NOT RFU</option>
         </select></div>
     </div>
+    <div class="field"><label for="pa_ewo">No. WO</label><input id="pa_ewo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" value="${esc(p.wo||'')}" placeholder="cth: ${CONTOH_WO}"></div>
     <div class="field"><label for="pa_eqty">Qty</label><input id="pa_eqty" type="number" min="0" inputmode="numeric" class="mono" value="${p.qty}">
       <div class="pa-help">Koreksi qty di sini tidak tercatat di Riwayat. Untuk barang masuk/keluar, pakai Input atau Ambil.</div></div>
     <div class="field"><label for="pa_remarks">Remarks <span class="pa-opt">(opsional)</span></label><input id="pa_remarks" class="mono" value="${esc(p.remarks||'')}"></div>
@@ -1246,11 +1273,16 @@ function paUpdate(){
     } else {
       const loc = val('pa_loc').toUpperCase();
       const st = document.querySelector('input[name="pa_status"]:checked')?.value || 'RFU';
-      const same = loc && loc === (p.loc||'').trim().toUpperCase() && st === (p.status||'').toUpperCase();
+      const wo = val('pa_wo');
+      const woOk = woBenar(wo);
+      const woTetap = !wo || wo === (p.wo || '');
+      const same = loc && loc === (p.loc||'').trim().toUpperCase() && st === (p.status||'').toUpperCase() && woTetap;
       document.querySelectorAll('[data-pa="loc"]').forEach(c=>c.classList.toggle('on', c.dataset.loc === loc));
       document.querySelectorAll('.pa-seg label').forEach(l=>l.classList.toggle('on', l.querySelector('input').checked));
-      document.getElementById('pa_err').textContent = same ? 'Lokasi dan status tujuan sama dengan asal. Ganti salah satunya.' : '';
-      btn.disabled = paState.busy || !qOk || !loc || same || !val('pa_nama');
+      document.getElementById('pa_err').textContent =
+        !woOk && wo.length >= 9 ? PESAN_WO_SALAH :
+        same ? 'Lokasi, status, dan WO tujuan sama dengan asal. Ganti salah satunya.' : '';
+      btn.disabled = paState.busy || !qOk || !loc || same || !woOk || !val('pa_nama');
       btn.textContent = paState.busy ? 'Menyimpan...' : ('Pindahkan' + (qOk ? ` ${q} pcs` : '') + (loc ? ` ke ${loc}` : ''));
     }
   }
@@ -1314,13 +1346,17 @@ async function paSubmit(kind){
     } else if(kind === 'transfer'){
       const q = paQty(), nama = val('pa_nama'), loc = val('pa_loc');
       const st = document.querySelector('input[name="pa_status"]:checked')?.value || 'RFU';
-      data = await runScript('transferStok', p.id, q, loc, st, val('pa_note'), nama);
+      data = await runScript('transferStok', p.id, q, loc, st, val('pa_note'), nama, val('pa_wo'));
       msg = `${q} pcs ${p.pn} dipindah ke ${loc.toUpperCase()} (${st})`;
     } else if(kind === 'edit'){
       const pn = val('pa_pn'), desc = val('pa_desc'), qty = Number(val('pa_eqty'));
       if(!pn || !desc) throw new Error('Parts number dan description wajib diisi.');
       if(!Number.isInteger(qty) || qty < 0) throw new Error('Qty harus angka bulat 0 atau lebih.');
+      const wo = val('pa_ewo');
+      if(!woBenar(wo)) throw new Error(PESAN_WO_SALAH);
       data = await runScript('updatePart', p.id, val('pa_unit'), pn, desc, val('pa_loc'), qty, val('pa_status_sel'), val('pa_remarks'));
+      // WO disimpan lewat RPC terpisah (ubah_wo_part), hanya kalau berubah
+      if(wo !== (p.wo || '')) data = await runScript('ubahWoPart', p.id, wo);
       msg = 'Perubahan data stok tersimpan';
     } else if(kind === 'hapus'){
       data = await runScript('deletePart', p.id);
