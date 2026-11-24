@@ -123,6 +123,7 @@
     #tab-stok th:nth-child(2),#tab-stok td.pn,             /* Parts Number (tampil di sel deskripsi) */
     #tab-stok .ket-col{display:none;}                      /* Keterangan (tampil sebagai NOTE) */
     #tab-stok .wo-col{display:none;}                       /* WO (tampil sebagai baris "WO ..." di sel deskripsi) */
+    #tab-stok .ag-col{display:none;}                       /* Aging (tampil kecil di bawah qty) */
     #tab-stok .m-pn{display:block;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--pn);word-break:break-all;}
     #tab-stok .m-name{display:block;font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;margin:2px 0 0;}
     #tab-stok .m-note{display:block;font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.3;}
@@ -172,7 +173,7 @@
   .filter-row{display:flex;gap:8px;margin-bottom:10px;}
   .filter-row select{margin-top:0;}
   /* Tombol filter kustom menggantikan <select> bawaan browser (HP: bottom-sheet, desktop: popover) */
-  #stok_loc_filter,#stok_status_filter{display:none;}
+  #stok_loc_filter,#stok_status_filter,#stok_urut{display:none;}
   .filter-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;
     background:var(--surface-2);border:1px solid var(--border);color:var(--text);
     padding:10px 11px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;text-align:left;
@@ -497,3 +498,24 @@ td.wo-col{white-space:nowrap;font-size:12px;}
 .wo-chip.kosong{border-style:dashed;color:var(--text-muted);}
 .tx-nrp{font-size:11px;opacity:.8;}
 
+
+/* =====================================================================
+   AGING (aging.js) -- angka hari polos, tanpa warna
+   ===================================================================== */
+th.ag-col{text-align:right;}
+td.ag-col{text-align:right;white-space:nowrap;font-size:13px;}
+td.ag-col b{font-weight:600;}
+.ag-tgl{display:block;font-size:11px;color:var(--text-muted);margin-top:2px;}
+.ag-nil{color:var(--text-muted);}
+.ag-tgl-panel{color:var(--text-muted);font-weight:400;}
+.m-aging{display:none;}
+@media (max-width:680px){
+  #tab-stok .m-aging{display:block;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:400;color:var(--text-muted);white-space:nowrap;margin-top:2px;}
+  #tab-stok .m-aging b{font-weight:600;color:var(--text);}
+}
+
+/* HP: tombol urutan turun ke baris sendiri supaya label filter tidak terpotong */
+@media (max-width:680px){
+  #tab-stok .filter-row{flex-wrap:wrap;}
+  #urutBtn{flex-basis:100%;}
+}
