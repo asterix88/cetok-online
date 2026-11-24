@@ -91,8 +91,8 @@
   .stat .lbl{order:-1;}
   body:not([data-tab="stok"]) .stats{display:none;}
 
-  /* Konten */
-  main{grid-area:isi;width:100%;max-width:var(--lebar-konten-maks);padding:14px 40px 48px;}
+  /* Konten (".app >" supaya layar Masuk yang juga pakai <main> tidak ikut kena) */
+  .app > main{grid-area:isi;width:100%;max-width:var(--lebar-konten-maks);padding:14px 40px 48px;}
   #tab-riwayat{max-width:var(--lebar-riwayat-maks);}
 }
 
