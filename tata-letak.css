@@ -95,3 +95,77 @@
   #tab-ambil .card,#tab-transfer .card,#tab-input .card{max-width:var(--lebar-form-maks);}
   #tab-riwayat{max-width:var(--lebar-riwayat-maks);}
 }
+
+
+/* =====================================================================
+   DESKTOP: TABEL STOK & RIWAYAT SESUAI MOCKUP
+   Tabel stok: kolom Part (nama + parts number), Unit, Status, WO,
+   Lokasi, Qty, Keterangan, Aging. Riwayat: kartu riwayat-desktop.js.
+   ===================================================================== */
+.th-desktop,.riwayat-jenis{display:none;}
+
+@media (min-width:900px){
+  /* ---------- Tabel stok ---------- */
+  .th-hp{display:none;}
+  .th-desktop{display:inline;}
+  #tab-stok .card{padding:0;overflow:hidden;}
+  #tab-stok table{font-size:13.5px;}
+  #tab-stok th{padding:12px 14px;font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;border-bottom:1px solid var(--border);}
+  #tab-stok td{padding:13px 14px;vertical-align:top;}
+  /* No & Parts Number disembunyikan: parts number tampil di bawah nama part */
+  #tab-stok th:nth-child(1),#tab-stok td:nth-child(1),
+  #tab-stok th:nth-child(2),#tab-stok td.pn{display:none;}
+  #tab-stok td.part-col{display:flex;flex-direction:column;gap:3px;}
+  #tab-stok td.part-col .m-name{order:1;font-weight:600;}
+  #tab-stok td.part-col .m-pn{order:2;display:block;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--text-muted);}
+  #tab-stok td.part-col .m-note{display:none;}
+  #tab-stok td.unit-col,#tab-stok td.wo-col{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;}
+  #tab-stok td.loc,#tab-stok td.loc .hl-loc{font-weight:400;}
+  #tab-stok td.qty{font-family:'Inter',sans-serif;font-weight:500;}
+  #tab-stok th.ket-col,#tab-stok td.ket-col{max-width:200px;}
+  #tab-stok .pagination{padding:12px 14px;border-top:1px solid var(--border);}
+
+  /* ---------- Riwayat: filter ---------- */
+  #tab-riwayat .filter-row{align-items:stretch;}
+  #filterType{display:none;}
+  .riwayat-jenis{display:flex;flex:1;min-width:0;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);}
+  .riwayat-jenis button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border:none;background:none;border-radius:var(--radius-sm);font:500 13px 'Inter',sans-serif;color:var(--text-muted);cursor:pointer;}
+  .riwayat-jenis button svg{width:15px;height:15px;}
+  .riwayat-jenis button[data-jenis="masuk"] svg{color:var(--green);}
+  .riwayat-jenis button[data-jenis="keluar"] svg{color:var(--red);}
+  .riwayat-jenis button[data-jenis="transfer"] svg{color:var(--amber);}
+  .riwayat-jenis button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--border);}
+  #filterUnit{flex:0 0 200px;margin:0;}
+
+  /* ---------- Riwayat: kartu ---------- */
+  #riwayatList{padding:0;}
+  .rk{position:relative;display:flex;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);}
+  .rk:last-child{border-bottom:none;}
+  .rk-ikon{width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border-radius:var(--radius);}
+  .rk-ikon svg{width:17px;height:17px;}
+  .rk-ikon.input{background:var(--green-dim);color:var(--green);}
+  .rk-ikon.ambil{background:var(--red-dim);color:var(--red);}
+  .rk-ikon.transfer{background:var(--amber-dim);color:var(--amber);}
+  .rk-isi{flex:1;min-width:0;}
+  .rk-kepala{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .rk-nama{font-weight:600;font-size:14.5px;line-height:1.3;}
+  .rk-pn{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+  .rk-qty{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+  .rk-qty span{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);}
+  .rk-qty b{font-family:'Oswald',sans-serif;font-weight:600;font-size:21px;line-height:1.1;}
+  .rk-qty.input b{color:var(--green);}
+  .rk-qty.ambil b{color:var(--red);}
+  .rk-qty.transfer b{color:var(--amber);}
+  .rk-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;}
+  .rk-unit{font-size:11.5px;padding:2px 7px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--border);}
+  .rk-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px 24px;margin-top:12px;padding-right:36px;}
+  .rk-meta div{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;}
+  .rk-meta svg{width:14px;height:14px;flex-shrink:0;color:var(--text-muted);}
+  .rk-meta span{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rk-meta em{font-style:normal;font-size:12px;color:var(--text-muted);}
+  .rk-meta .mono{font-size:12.5px;color:var(--text-muted);}
+  .rk-panah{width:13px !important;height:13px !important;color:var(--amber) !important;}
+  .rk-lainnya{position:absolute;right:12px;bottom:12px;width:30px;height:30px;display:grid;place-items:center;border:none;background:none;border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;}
+  .rk-lainnya svg{width:16px;height:16px;}
+  .rk-lainnya:hover{background:var(--surface-2);color:var(--text);}
+}

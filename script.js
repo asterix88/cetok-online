@@ -576,7 +576,7 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ag-col">${selAgingHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td></tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td class="part-col"><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td><td class="ag-col">${selAgingHtml(p)}</td></tr>`).join('');
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -660,21 +660,9 @@ function renderPaginationControls(containerId, page, totalPages, totalCount, uni
   if(prevBtn) prevBtn.onclick = ()=>{ if(page>1) onChange(page-1); };
   if(nextBtn) nextBtn.onclick = ()=>{ if(page<totalPages) onChange(page+1); };
 }
-function renderRiwayat(){
-  // transactions di sini SUDAH berupa satu halaman (maks 50 baris) hasil
-  // query ke Supabase di loadRiwayatPage() -- tidak difilter/diurutkan lagi
-  // di sini, itu sudah dikerjakan oleh server.
-  const el = document.getElementById('riwayatList');
-  if(transactions.length===0){
-    const q = document.getElementById('riwayat_search').value.trim();
-    const msg = q
-      ? `Tidak ada riwayat parts number/nama yang cocok dengan "<strong>${esc(q)}</strong>".`
-      : `Belum ada riwayat transaksi.`;
-    el.innerHTML = `<div class="empty"><div class="big">${ICON_CLOCK}</div>${msg}</div>`;
-    document.getElementById('riwayatPagination').innerHTML = '';
-    return;
-  }
-  el.innerHTML = transactions.map(t=>`
+// Kartu riwayat tampilan HP (tampilan lama)
+function kartuRiwayatHpHtml(t){
+  return `
     <div class="tx-row">
       <div>
         <div style="font-weight:600;font-size:13.5px;">${esc(t.desc)}</div>
@@ -689,7 +677,25 @@ function renderRiwayat(){
       <div style="text-align:right;">
         <div class="tx-qty ${t.type}">${t.type==='masuk'?'INPUT':'AMBIL'} : ${t.type==='masuk'?'':'-'}${t.qty}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+}
+function renderRiwayat(){
+  // transactions di sini SUDAH berupa satu halaman (maks 50 baris) hasil
+  // query ke Supabase di loadRiwayatPage() -- tidak difilter/diurutkan lagi
+  // di sini, itu sudah dikerjakan oleh server.
+  const el = document.getElementById('riwayatList');
+  if(transactions.length===0){
+    const q = document.getElementById('riwayat_search').value.trim();
+    const msg = q
+      ? `Tidak ada riwayat parts number/nama yang cocok dengan "<strong>${esc(q)}</strong>".`
+      : `Belum ada riwayat transaksi.`;
+    el.innerHTML = `<div class="empty"><div class="big">${ICON_CLOCK}</div>${msg}</div>`;
+    document.getElementById('riwayatPagination').innerHTML = '';
+    return;
+  }
+  // Desktop: kartu sesuai mockup (riwayat-desktop.js). HP: kartu lama.
+  const kartu = pakaiKartuRiwayatDesktop() ? kartuRiwayatDesktopHtml : kartuRiwayatHpHtml;
+  el.innerHTML = transactions.map(kartu).join('');
 
   renderPaginationControls('riwayatPagination', riwayatPage, riwayatPageCount, riwayatTotal, 'transaksi', (newPage)=>{
     loadRiwayatPage(newPage);

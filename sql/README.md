@@ -8,6 +8,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `02-data-karyawan.sql` | Daftar akun karyawan | **tidak disimpan di GitHub** (repo publik, berisi data pribadi) |
 | `03-wo.sql` | Kolom WO di stok & riwayat, NRP pencatat di riwayat, fungsi `ubah_wo_part` (admin) | belum dijalankan |
 | `04-aging.sql` | Kolom `aging_sejak` di stok + trigger reset saat status berganti | belum dijalankan (setelah 03) |
+| `05-riwayat-jenis.sql` | Filter Riwayat: Ambil dan Transfer dipisah | belum dijalankan (setelah 03) |
 
 ## Urutan pasang login NRP
 
