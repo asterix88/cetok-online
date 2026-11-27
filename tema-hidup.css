@@ -204,8 +204,8 @@ header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filt
   .auth-watermark{opacity:.06;}
 }
 
-/* ---------- Pill status RFU / NOT RFU ----------
-   Netral tanpa warna hijau / merah. RFU = garis tipis,
-   NOT RFU = isi gelap (kebalikan), supaya tetap mudah dibedakan. */
-.status-badge.rfu{background:transparent;color:var(--text-muted);box-shadow:inset 0 0 0 1px var(--border);}
-.status-badge.not-rfu{background:var(--text);color:var(--bg);}
+/* ---------- Status RFU / NOT RFU ----------
+   Tanpa kotak: warna hanya pada teks, sama dengan angka ringkasan. */
+.status-badge.rfu,.status-badge.not-rfu{background:transparent;box-shadow:none;padding:0 2px;letter-spacing:.4px;}
+.status-badge.rfu{color:var(--green);}
+.status-badge.not-rfu{color:var(--red);}
