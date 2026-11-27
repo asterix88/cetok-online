@@ -203,3 +203,9 @@ header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filt
   .auth-kaki{color:var(--merek-redup);}
   .auth-watermark{opacity:.06;}
 }
+
+/* ---------- Pill status RFU / NOT RFU ----------
+   Netral tanpa warna hijau / merah. RFU = garis tipis,
+   NOT RFU = isi gelap (kebalikan), supaya tetap mudah dibedakan. */
+.status-badge.rfu{background:transparent;color:var(--text-muted);box-shadow:inset 0 0 0 1px var(--border);}
+.status-badge.not-rfu{background:var(--text);color:var(--bg);}
