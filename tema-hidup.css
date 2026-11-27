@@ -60,9 +60,6 @@ button.btn{transition:filter .15s ease, transform .15s ease, box-shadow .15s eas
 .btn-red:not(:disabled):active,.btn-amber:not(:disabled):active,.btn-green:not(:disabled):active{transform:none;filter:brightness(.97);}
 .btn-outline{box-shadow:var(--bayang-1);}
 
-/* Status RFU / NOT RFU: titik warna di depan label */
-.status-badge{display:inline-flex;align-items:center;gap:5px;}
-.status-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
 
 
 /* ---------------------------------------------------------------------
@@ -80,8 +77,8 @@ header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filt
 .stat{position:relative;transition:background .15s ease;}
 .stat:hover{background:color-mix(in srgb,var(--green) 5%,transparent);}
 .stat.warn:hover{background:color-mix(in srgb,var(--red) 5%,transparent);}
-.stat .lbl::before{box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 18%,transparent);}
-.stat.warn .lbl::before{box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 18%,transparent);}
+/* Tanpa titik warna di depan label: warna cukup di angkanya */
+.stat .lbl::before{display:none;}
 .stat:not(.warn) .num{color:var(--green);}
 
 
@@ -179,16 +176,11 @@ header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filt
    9. Layar login
    --------------------------------------------------------------------- */
 .auth-input input{box-shadow:var(--bayang-1);}
-.auth-btn{box-shadow:var(--bayang-tombol), 0 8px 18px -8px color-mix(in srgb,var(--amber) 70%,transparent);transition:filter .15s ease, transform .15s ease;}
+/* Kolom NRP / PIN saat aktif: garis netral, tanpa warna kuning */
+.auth-input input:focus{border-color:var(--text-muted);box-shadow:var(--bayang-1),0 0 0 3px color-mix(in srgb,var(--text-muted) 14%,transparent);}
+.auth-btn{box-shadow:var(--bayang-tombol), 0 8px 18px -10px rgba(0,0,0,.45);transition:filter .15s ease, transform .15s ease;}
 .auth-btn:not(:disabled):hover{filter:brightness(1.05);transform:translateY(-1px);}
 .auth-brand img,.auth-siapa .akun-inisial{box-shadow:var(--bayang-2);}
-
-/* HP: cahaya kuning lembut di atas */
-@media (max-width:899px){
-  .auth-main{background:
-    radial-gradient(560px 340px at 50% -90px, color-mix(in srgb,var(--amber) 24%,transparent), transparent 72%),
-    var(--bg);}
-}
 
 @media (min-width:900px){
   .auth-main{background:var(--bg);}
