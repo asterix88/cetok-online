@@ -174,9 +174,11 @@ async function runScript(fnName, ...args){
     // satu parts number + unit model yang sama bisa punya BEBERAPA baris stok
     // terpisah kalau lokasi atau status RFU/NOT RFU-nya beda. ID memastikan
     // yang dikurangi stoknya benar-benar baris yang dipilih user.
-    const [id, qty, note, nama] = args;
+    // woAmbil = WO pengambilan (boleh kosong), beda dengan WO input di baris stok
+    const [id, qty, note, nama, woAmbil] = args;
     const { error } = await sb.rpc('ambil_barang', {
-      p_id: id, p_qty: qty, p_note: note, p_nama: nama
+      p_id: id, p_qty: qty, p_note: note, p_nama: nama,
+      p_wo_ambil: woAmbil || null
     });
     if (error) throw new Error(error.message || 'Gagal menyimpan ambil barang');
     return runScript('getAllData');
@@ -312,6 +314,7 @@ async function loadRiwayatPage(page){
       loc: r.loc,
       wo: r.wo,
       wo_lama: r.wo_lama,
+      wo_ambil: r.wo_ambil,   // WO pengambilan (sql/06-wo-ambil.sql)
       nrp: r.nrp
     }));
     riwayatTotal = data.total || 0;
@@ -819,13 +822,15 @@ async function ambilBarang(){
   if(!qty || qty<=0){ toast('Quantity harus lebih dari 0'); return; }
   if(!note){ toast('Keterangan keperluan wajib diisi'); return; }
   if(!nama){ toast('Nama pengambil wajib diisi'); return; }
+  const woAmbil = bacaWo('ax_wo_ambil');   // WO pengambilan, boleh kosong
+  if(!woBenar(woAmbil)){ toast(PESAN_WO_SALAH); return; }
 
   const btn = document.getElementById('btnAmbil'); btn.disabled=true; btn.textContent='Menyimpan...';
   try{
-    const data = await runScript('ambilBarang', part.id, qty, note, nama);
+    const data = await runScript('ambilBarang', part.id, qty, note, nama, woAmbil);
     parts = data.parts; transactions = data.transactions;
     toast(`Ambil barang tersimpan untuk ${part.pn}`);
-    document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value=''; document.getElementById('ax_wo').value='';
+    document.getElementById('ax_pn').value=''; document.getElementById('ax_qty').value=''; document.getElementById('ax_note').value=''; document.getElementById('ax_wo').value=''; document.getElementById('ax_wo_ambil').value='';
     document.getElementById('ax_found').innerHTML=''; ambilSelectedPartId=null;
     currentSheet = part.unit; render();
   }catch(e){ toast('Gagal: ' + (e.message||e)); }
@@ -926,7 +931,7 @@ function isTransferFormReady(){
 }
 // Kolom nama tidak ikut urutan Enter karena terisi otomatis dari akun login.
 const INPUT_FIELD_ORDER = ['in_unit','in_pn','in_desc','in_loc','in_wo','in_status','in_qty','in_remarks'];
-const AMBIL_FIELD_ORDER = ['ax_wo','ax_pn','ax_qty','ax_note'];
+const AMBIL_FIELD_ORDER = ['ax_wo','ax_pn','ax_qty','ax_wo_ambil','ax_note'];
 const TRANSFER_FIELD_ORDER = ['tf_pn','tf_loc','tf_status','tf_qty','tf_wo','tf_note'];
 
 function setupEnterNavigation(order, isReadyFn, submitFn){
@@ -1194,6 +1199,7 @@ function paStepperHtml(max){
 function paAmbilHtml(p){
   return paContextHtml(p) + paStepperHtml(p.qty) + `
     <div class="field"><label for="pa_note">Keperluan</label><input id="pa_note" class="mono" placeholder="cth: Perbaikan unit E5138" autocomplete="off"></div>
+    <div class="field"><label for="pa_wo_ambil">WO pengambilan <span class="pa-opt">(opsional)</span></label><input id="pa_wo_ambil" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: ${CONTOH_WO}"></div>
     <div class="field"><label for="pa_nama">Nama pengambil</label><input id="pa_nama" class="mono nama-login" value="${esc(namaLogin())}" readonly tabindex="-1"></div>
     <div class="pa-err" id="pa_err" role="alert"></div>
     <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-ambil" disabled>Ambil</button>`;
@@ -1291,7 +1297,9 @@ function paUpdate(){
     document.querySelector('[data-pa="all"]').classList.toggle('on', q === max);
     const qOk = q >= 1 && q <= max;
     if(v === 'ambil'){
-      btn.disabled = paState.busy || !qOk || !val('pa_note') || !val('pa_nama');
+      const woAmbil = val('pa_wo_ambil');
+      document.getElementById('pa_err').textContent = !woBenar(woAmbil) && woAmbil.length >= 9 ? PESAN_WO_SALAH : '';
+      btn.disabled = paState.busy || !qOk || !val('pa_note') || !val('pa_nama') || !woBenar(woAmbil);
       btn.textContent = paState.busy ? 'Menyimpan...' : (qOk ? `Ambil ${q} pcs` : 'Ambil');
     } else {
       const loc = val('pa_loc').toUpperCase();
@@ -1364,7 +1372,7 @@ async function paSubmit(kind){
     let data, msg;
     if(kind === 'ambil'){
       const q = paQty(), nama = val('pa_nama');
-      data = await runScript('ambilBarang', p.id, q, val('pa_note'), nama);
+      data = await runScript('ambilBarang', p.id, q, val('pa_note'), nama, val('pa_wo_ambil'));
       msg = `Ambil ${q} pcs ${p.pn} tersimpan`;
     } else if(kind === 'transfer'){
       const q = paQty(), nama = val('pa_nama'), loc = val('pa_loc');

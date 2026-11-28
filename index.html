@@ -154,14 +154,16 @@
       <div class="form-v2">
       <div class="card form-kartu">
         <div class="form-bagian"><h3 class="form-judul">Part</h3><div class="form-grid">
-          <!-- No. WO paling atas: ketik WO, part yang cocok langsung disarankan (wo.js) -->
-          <div class="field"><label for="ax_wo">No. WO</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="ax_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="Ketik nomor WO, cth: 200041587"></div><div id="ax_wo_matches"></div></div>
+          <!-- WO input paling atas: ketik WO yang melekat di part, part yang cocok langsung disarankan (wo.js) -->
+          <div class="field"><label for="ax_wo">WO Input</label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="ax_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="Cari part lewat WO input"></div><div id="ax_wo_matches"></div></div>
           <div class="field"><label>Parts Number</label><input id="ax_pn" class="mono" placeholder="Ketik parts number atau nama part..."><div id="ax_matches"></div></div>
           <div id="ax_found" class="span2"></div>
         </div></div>
         <div class="form-bagian"><h3 class="form-judul">Pengambilan</h3><div class="form-grid">
           <div class="field"><label>Quantity Diambil</label><div class="qty-step"><button type="button" class="qs-btn" data-langkah="-1" data-untuk="ax_qty" aria-label="Kurangi" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button><input id="ax_qty" type="number" min="1" class="mono" placeholder="0"><button type="button" class="qs-btn" data-langkah="1" data-untuk="ax_qty" aria-label="Tambah" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
-          <div class="field"><label>Keterangan Keperluan</label><input id="ax_note" class="mono" placeholder="cth: Perbaikan unit E5138"></div>
+          <!-- WO pengambilan: dicatat di riwayat, tidak mengubah WO input part (sql/06-wo-ambil.sql) -->
+          <div class="field"><label for="ax_wo_ambil">WO Pengambilan <span class="opsional">(opsional)</span></label><div class="wo-inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><input id="ax_wo_ambil" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: 200041587"></div></div>
+          <div class="field span2"><label>Keterangan Keperluan</label><input id="ax_note" class="mono" placeholder="cth: Perbaikan unit E5138"></div>
         </div></div>
         <div class="form-kaki">
           <div class="field"><label>Nama Pengambil</label><input id="ax_nama" class="mono nama-login" readonly tabindex="-1"><div class="who-v2"><span class="who-ini"></span><div><div class="who-nama"></div><span class="who-nrp mono"></span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div></div>

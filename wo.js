@@ -1,14 +1,19 @@
 // =====================================================================
 // wo.js -- Nomor WO (work order)
 //
-// Format WO: 9 angka diawali 2000, contoh 200041587.
+// Format WO: 9 angka, awalan tidak pasti (20, 22, 25, ...), contoh 200041587.
+//
+// Ada dua macam WO:
+//   - WO input      : melekat di baris part (stok.wo)
+//   - WO pengambilan: dicatat di riwayat saat part diambil (riwayat.wo_ambil)
 // Dipakai di:
 //   - Tab Input    : kolom No. WO di bawah Parts Description
-//   - Tab Ambil    : kolom No. WO paling atas, ketik WO -> part disarankan
+//   - Tab Ambil    : kolom WO Input paling atas, ketik WO -> part disarankan;
+//                    kolom WO Pengambilan (opsional) disimpan ke riwayat
 //   - Tab Transfer : kolom No. WO di bawah Lokasi Tujuan
 //                    (kosong = WO lama ikut pindah, diisi = WO baru)
 //   - Tab Stok     : kolom WO + pencarian ikut cek WO
-//   - Tab Riwayat  : chip "WO ..." di tiap kartu
+//   - Tab Riwayat  : chip "WO ..." di tiap kartu, + chip "WO AMBIL ..."
 //
 // Penyimpanan & pengecekan akhir tetap di database (sql/03-wo.sql),
 // pengecekan di sini hanya supaya user langsung tahu kalau salah ketik.
@@ -16,9 +21,9 @@
 // selectAmbilPart dari sana).
 // =====================================================================
 
-const POLA_WO = /^2000[0-9]{5}$/;
+const POLA_WO = /^[0-9]{9}$/;
 const CONTOH_WO = '200041587';
-const PESAN_WO_SALAH = 'Format WO harus 9 angka diawali 2000, cth: ' + CONTOH_WO;
+const PESAN_WO_SALAH = 'Format WO harus 9 angka, cth: ' + CONTOH_WO;
 const MIN_KETIK_SARAN_WO = 2;   // saran part baru muncul setelah 2 angka diketik
 
 const IKON_PANAH_WO = '<svg class="wo-panah" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
@@ -45,7 +50,7 @@ function selWoHtml(p, q){
   return p.wo ? `<span class="mono">${hl(p.wo, q)}</span>` : '<span class="wo-nil">-</span>';
 }
 
-// Baris kecil "WO 2000xxxxx" di sel deskripsi (tampilan HP). Kosong = tidak ditampilkan.
+// Baris kecil "WO 22xxxxxxx" di sel deskripsi (tampilan HP). Kosong = tidak ditampilkan.
 function barisWoHpHtml(p, q){
   return p.wo ? `<span class="m-wo">WO <span class="mono">${hl(p.wo, q)}</span></span>` : '';
 }
@@ -60,6 +65,12 @@ function chipWoHtml(t){
   }
   const lama = t.wo_lama ? `<span class="mono lama">${esc(t.wo_lama)}</span>${IKON_PANAH_WO}` : '';
   return `<span class="wo-chip"><b>WO</b>${lama}<span class="mono">${esc(t.wo || '–')}</span></span>`;
+}
+
+// Chip WO pengambilan di kartu riwayat Ambil. Kosong = tidak ditampilkan.
+function chipWoAmbilHtml(t){
+  if(!t.wo_ambil) return '';
+  return `<span class="wo-chip"><b>WO AMBIL</b><span class="mono">${esc(t.wo_ambil)}</span></span>`;
 }
 
 
