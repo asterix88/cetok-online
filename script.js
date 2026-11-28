@@ -39,7 +39,7 @@ updateThemeIcon();
 // Dijadikan fungsi terpisah (bukan cuma di dalam listener klik tab) supaya
 // bisa dipanggil dari tempat lain juga, mis. saat kartu "Stok Kosong" diklik.
 // Judul halaman di desktop (tata-letak.css menyembunyikannya di HP)
-const JUDUL_TAB = { stok:'Stok', ambil:'Ambil', transfer:'Transfer', input:'Input', riwayat:'Riwayat' };
+const JUDUL_TAB = { stok:'Stok', ambil:'Ambil', transfer:'Transfer', input:'Input', riwayat:'Riwayat', log:'Log Admin' };
 
 function switchTab(tabName){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));

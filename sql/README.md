@@ -11,6 +11,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `05-riwayat-jenis.sql` | Filter Riwayat: Ambil dan Transfer dipisah | belum dijalankan (setelah 03) |
 | `06-wo-ambil.sql` | WO pengambilan di riwayat (terpisah dari WO input), format WO 12 angka bebas awalan | belum dijalankan (setelah 05) |
 | `08-ubah-aging.sql` | Fungsi `ubah_aging_part` (admin): ganti tanggal mulai aging dari tombol edit baris stok | belum dijalankan (setelah 04) |
+| `09-log-admin.sql` | Tabel `log_admin` (tidak bisa diubah/dihapus), trigger pencatat di stok & riwayat, tanda aksi di fungsi admin, `get_log_admin` | belum dijalankan (setelah 03, dan setelah 08 kalau ada) |
 
 ## Urutan pasang login NRP
 
@@ -57,3 +58,11 @@ update public.karyawan set admin = null where nrp = '12345678';
 -- karyawan keluar / pindah (tidak bisa masuk lagi, riwayat tetap ada)
 update public.karyawan set aktif = false where nrp = '12345678';
 ```
+
+## Urutan pasang Log Admin
+
+1. Jalankan `09-log-admin.sql` **sebelum** merge kode web Log Admin
+   (menu Log memanggil `get_log_admin`). Kode web lama tetap jalan setelah SQL ini.
+2. Kalau `08-ubah-aging.sql` dijalankan belakangan, jalankan `09-log-admin.sql`
+   sekali lagi supaya Ubah Aging ikut tercatat.
+3. Merge kode web (`log-admin.js`, `log-admin.css`).

@@ -1,0 +1,44 @@
+/* =====================================================================
+   LOG ADMIN (log-admin.js)
+   Kartu memakai bentuk kartu Riwayat (.rk di tata-letak.css); di sini
+   hanya tambahan untuk filter tanggal/admin dan daftar perubahan.
+   ===================================================================== */
+
+/* Tombol menu disembunyikan untuk non-admin (nav.tabs button memakai display:flex) */
+#tabBtnLog[hidden]{display:none;}
+
+/* --- Filter: Dari / Sampai / Admin --- */
+.lg-filter{flex-wrap:wrap;}
+.lg-tanggal{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.lg-tanggal span{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted);}
+.lg-tanggal input{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;}
+#log_admin{flex:1 1 100%;margin:0;}
+
+#logList{padding:0;}
+
+/* --- Kartu --- */
+.lg-ikon{background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border);}
+.lg-aksi{flex-shrink:0;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);}
+.lg-aksi.hapus{color:var(--red);}
+.lg-judul{margin-top:10px;font-size:11px;color:var(--text-muted);}
+
+/* Daftar kolom yang berubah: label di kiri, lama -> baru di kanan */
+.lg-perubahan{margin:10px 0 0;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);}
+.lg-judul + .lg-perubahan{margin-top:5px;}
+.lg-baris{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:4px 0;font-size:12.5px;}
+.lg-baris + .lg-baris{border-top:1px solid var(--border);}
+.lg-baris dt{color:var(--text-muted);}
+.lg-baris dd{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;font-family:'JetBrains Mono',monospace;font-size:12px;word-break:break-word;}
+.lg-baris dd svg{width:12px;height:12px;flex-shrink:0;color:var(--text-muted);}
+.lg-lama{color:var(--text-muted);text-decoration:line-through;}
+.lg-kosong{font-style:normal;color:var(--text-muted);}
+
+#tab-log .rk-meta{padding-right:0;}
+
+@media (min-width:900px){
+  .lg-filter{flex-wrap:nowrap;align-items:flex-end;}
+  .lg-tanggal{flex:0 0 170px;}
+  #log_admin{flex:0 0 220px;}
+  .lg-perubahan{max-width:560px;}
+  .lg-baris{grid-template-columns:120px 1fr;}
+}

@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="tata-letak.css">
 <link rel="stylesheet" href="tema-hidup.css">
 <link rel="stylesheet" href="edit-baris.css">
+<link rel="stylesheet" href="log-admin.css">
 </head>
 <body class="cek-sesi" data-tab="stok">
 <!-- ================= LOGIN NRP (diatur oleh auth.js) =================
@@ -107,6 +108,7 @@
     <button data-tab="transfer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>Transfer</button>
     <button data-tab="input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Input</button>
     <button data-tab="riwayat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Riwayat</button>
+    <button data-tab="log" id="tabBtnLog" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9z"/><path d="M15 5h3v16H6V5h3"/><path d="M9 12h6M9 16h4"/></svg>Log</button>
   </nav>
   <main>
     <section id="tab-stok">
@@ -248,6 +250,17 @@
       <div class="card" id="riwayatList"></div>
       <div class="pagination" id="riwayatPagination"></div>
     </section>
+
+    <!-- Log Admin: khusus admin, hanya baca (log-admin.js) -->
+    <section id="tab-log" style="display:none;">
+      <div class="filter-row lg-filter">
+        <label class="lg-tanggal"><span>Dari</span><input type="date" id="log_dari"></label>
+        <label class="lg-tanggal"><span>Sampai</span><input type="date" id="log_sampai"></label>
+        <select id="log_admin"><option value="">Semua Admin</option></select>
+      </div>
+      <div class="card" id="logList"></div>
+      <div class="pagination" id="logPagination"></div>
+    </section>
   </main>
 </div>
 
@@ -297,6 +310,7 @@
 <script src="edit-baris.js"></script>
 <script src="stok-filter.js"></script>
 <script src="form-desktop.js"></script>
+<script src="log-admin.js"></script>
 <script src="auth.js"></script>
 </body>
   </html>
