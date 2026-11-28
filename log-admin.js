@@ -2,12 +2,12 @@
 // log-admin.js -- Menu "Log Admin" (khusus admin)
 //
 // Menampilkan catatan setiap perubahan yang dilakukan admin:
-//   Edit Stok, Ubah WO, Hapus Part, Edit Riwayat.
+//   Edit Stok, Ubah WO, Ubah Aging, Hapus Part, Edit Riwayat.
 // Tiap catatan berisi: waktu, nama + NRP admin, aksi, part (unit + PN),
 // dan kolom yang berubah (nilai lama -> baru). Untuk Hapus Part, yang
 // ditampilkan isi terakhir baris sebelum dihapus.
 //
-// Catatan ditulis oleh database (lihat sql/08-log-admin.sql), bukan oleh
+// Catatan ditulis oleh database (lihat sql/09-log-admin.sql), bukan oleh
 // web, jadi tidak bisa terlewat. Dari web, log hanya bisa dibaca.
 //
 // File ini dimuat SETELAH script.js (butuh sb, esc, isAdmin, ICON_*).
@@ -18,6 +18,7 @@ const LOG_PAGE_SIZE = 20;
 const AKSI_LOG = {
   edit_stok:    { label: 'Edit Stok' },
   ubah_wo:      { label: 'Ubah WO' },
+  ubah_aging:   { label: 'Ubah Aging' },
   hapus_part:   { label: 'Hapus Part' },
   edit_riwayat: { label: 'Edit Riwayat' },
 };
@@ -26,12 +27,13 @@ const AKSI_LOG = {
 const LABEL_KOLOM_LOG = {
   unit: 'Unit', pn: 'Parts Number', desc: 'Deskripsi', loc: 'Lokasi',
   qty: 'Qty', status: 'Status', remarks: 'Remarks', wo: 'WO',
-  note: 'Keterangan', nama: 'Nama',
+  aging: 'Aging sejak', note: 'Keterangan', nama: 'Nama',
 };
 
 const IKON_AKSI_LOG = {
   edit_stok:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>',
   ubah_wo:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/></svg>',
+  ubah_aging:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
   hapus_part:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>',
   edit_riwayat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 7v5l3 2"/><path d="M15 21h2l4-4-2-2-4 4v2Z"/></svg>',
 };
