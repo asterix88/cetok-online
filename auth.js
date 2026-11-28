@@ -101,6 +101,7 @@ function bukaAplikasi(){
   elLayarAuth.hidden = true;
 
   isAdmin = karyawanLogin.admin;
+  aturMenuLogAdmin();   // menu Log Admin hanya untuk admin (log-admin.js)
   isiNamaOtomatis();
   isiMenuAkun();
   catatAktivitas(true);
