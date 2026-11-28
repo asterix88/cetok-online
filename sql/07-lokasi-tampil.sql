@@ -1,34 +1,29 @@
 -- 07-lokasi-tampil.sql
 -- Part di lokasi berikut tampil di cetok-online.
---   1. Trigger: part baru / pindah lokasi otomatis ikut aturan ini
---   2. Update: part yang sudah ada langsung tampil
---
--- Cek dulu nama trigger yang ada (hasil yang diharapkan: trg_set_is_filtered):
---   select tgname, tgfoid::regproc from pg_trigger
---   where tgrelid = 'public.stok'::regclass and not tgisinternal;
+--   1. Fungsi trigger sync_stok_is_filtered (trigger trg_stok_is_filtered):
+--      daftar lokasi ditambah LEMARI HIJAU, LEMARI PLANNER, VENDOR.
+--      Part baru / pindah lokasi otomatis ikut aturan ini.
+--   2. Update: part yang sudah ada di lokasi tersebut langsung tampil.
 
-create or replace function public.set_is_filtered()
+create or replace function public.sync_stok_is_filtered()
 returns trigger
 language plpgsql
-as $$
+as $function$
 begin
-  new.is_filtered := upper(trim(coalesce(new.lokasi, ''))) not in (
-    'FABRIKASI',
-    'LAYDOWN',
-    'LEMARI HIJAU',
-    'LEMARI PLANNER',
-    'LOGISTIK',
-    'TRACKINDO',
-    'VENDOR'
+  NEW.is_filtered := not (
+    upper(trim(coalesce(NEW.lokasi, ''))) = any (array[
+      'FABRIKASI',
+      'LAYDOWN',
+      'LEMARI HIJAU',
+      'LEMARI PLANNER',
+      'LOGISTIK',
+      'TRACKINDO',
+      'VENDOR'
+    ])
   );
-  return new;
+  return NEW;
 end;
-$$;
-
-drop trigger if exists trg_set_is_filtered on public.stok;
-create trigger trg_set_is_filtered
-  before insert or update of lokasi on public.stok
-  for each row execute function public.set_is_filtered();
+$function$;
 
 update public.stok
 set is_filtered = false
