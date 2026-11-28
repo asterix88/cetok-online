@@ -10,8 +10,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `04-aging.sql` | Kolom `aging_sejak` di stok + trigger reset saat status berganti | belum dijalankan (setelah 03) |
 | `05-riwayat-jenis.sql` | Filter Riwayat: Ambil dan Transfer dipisah | belum dijalankan (setelah 03) |
 | `06-wo-ambil.sql` | WO pengambilan di riwayat (terpisah dari WO input), format WO 12 angka bebas awalan | belum dijalankan (setelah 05) |
-| `07-lokasi-tampil.sql` | Set `is_filtered = false` untuk part di 7 lokasi (termasuk LEMARI HIJAU, LEMARI PLANNER, VENDOR) | belum dijalankan |
-| `08-trigger-lokasi-tampil.sql` | Trigger `is_filtered` memakai 7 lokasi yang sama (part baru / pindah lokasi ikut tampil) | belum dijalankan |
+| `07-lokasi-tampil.sql` | Lokasi yang tampil di cetok-online (trigger + update `is_filtered`), termasuk LEMARI HIJAU, LEMARI PLANNER, VENDOR | belum dijalankan |
 
 ## Urutan pasang login NRP
 
