@@ -88,7 +88,7 @@ function kartuRiwayatHtml(t){
           </div>
           <div class="rk-qty ${jenis}"><span>${info.label}</span><b>${info.tanda}${t.qty}</b></div>
         </div>
-        <div class="rk-label"><span class="rk-unit mono">${esc(t.unit)}</span>${statusBadge(t.status)}${chipWoHtml(t)}</div>
+        <div class="rk-label"><span class="rk-unit mono">${esc(t.unit)}</span>${statusBadge(t.status)}${chipWoHtml(t)}${chipWoAmbilHtml(t)}</div>
         <div class="rk-meta">${meta}</div>
       </div>
       ${isAdmin ? `<button type="button" class="rk-lainnya" onclick="openEditRiwayat('${t.id}')" aria-label="Edit riwayat" title="Edit">${IKON_LAINNYA}</button>` : ''}
