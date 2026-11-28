@@ -1,0 +1,58 @@
+/* =====================================================================
+   edit-baris.css -- Edit data stok langsung di baris (khusus admin)
+   Pasangan edit-baris.js. Dimuat setelah tema-hidup.css.
+   ===================================================================== */
+
+/* ---- Tombol ikon (pensil, simpan, batal, hapus) ---- */
+.eb-aksi{width:1%;white-space:nowrap;text-align:right;}
+#tab-stok td.eb-aksi{padding-top:9px;padding-bottom:9px;}
+.eb-tombol{display:inline-flex;gap:2px;}
+.eb-btn{width:30px;height:30px;display:inline-grid;place-items:center;padding:0;border:none;background:none;
+  border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;}
+.eb-btn svg{width:16px;height:16px;}
+.eb-btn:hover{background:var(--surface-2);color:var(--text);}
+.eb-btn.simpan{color:var(--green);}
+.eb-btn.hapus{color:var(--red);}
+.eb-edit .eb-btn:hover{background:var(--surface);}
+
+/* ---- Isian ---- */
+.eb-in{width:100%;min-width:0;height:32px;margin:0;padding:0 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;}
+.eb-in:focus{outline:none;border-color:var(--text-muted);box-shadow:none;}
+select.eb-in{padding-right:4px;}
+
+/* ---- Desktop: baris tabel yang sedang diedit ---- */
+#tab-stok tr.eb-edit td{background:var(--surface-2);vertical-align:middle;padding-left:6px;padding-right:6px;}
+#tab-stok tr.eb-edit td.part-col{display:table-cell;padding-left:14px;}
+#tab-stok tr.eb-edit td.part-col .eb-in{display:block;min-width:130px;}
+#tab-stok tr.eb-edit td.part-col .eb-in + .eb-in{margin-top:6px;}
+.eb-in.unit{min-width:100px;}
+.eb-in.status{min-width:92px;}
+.eb-in.wo{min-width:116px;}
+.eb-in.lok{min-width:80px;}
+.eb-in.qty{min-width:52px;text-align:right;}
+.eb-in.ket{min-width:72px;}
+.eb-in.tgl{min-width:128px;padding-right:4px;}
+
+/* Layar desktop sempit: tabel boleh digeser ke samping, jangan terpotong */
+@media (min-width:900px){
+  #tab-stok .card{overflow-x:auto;}
+}
+
+/* display:table-cell: tata-letak.css menyembunyikan td pertama (kolom No) di desktop */
+#tab-stok tr.eb-konf td{display:table-cell;background:var(--surface-2);text-align:right;padding:0 14px 10px;}
+#tab-stok tr.eb-edit:has(+ tr.eb-konf) td{border-bottom:none;}
+.eb-konfirmasi{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;white-space:nowrap;}
+.eb-teks-btn{padding:6px 4px;border:none;background:none;color:var(--text);font:600 12.5px 'Inter',sans-serif;cursor:pointer;}
+.eb-teks-btn.merah{color:var(--red);}
+
+/* ---- HP: kartu stok ---- */
+.sk .eb-tombol{align-self:flex-start;margin:-4px -8px 0 0;}
+.sk.eb-edit{display:block;background:var(--surface-2);cursor:default;}
+.eb-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.eb-form label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:11px;font-weight:500;color:var(--text-muted);}
+.eb-form .penuh{grid-column:1 / -1;}
+.eb-form .eb-in{height:36px;font-size:13px;}
+.eb-kaki{display:flex;justify-content:flex-end;align-items:center;margin-top:12px;}
+.eb-kaki .eb-btn{width:36px;height:36px;}
+.eb-kaki .eb-btn svg{width:18px;height:18px;}

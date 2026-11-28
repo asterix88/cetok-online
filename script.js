@@ -91,7 +91,7 @@ const SHOW_HIDDEN = window.location.hostname.includes('stock-spareparts');
 
 // --- Status admin ---
 // Diisi oleh auth.js setelah karyawan login (kolom admin = 'ya' di tabel
-// karyawan). Dipakai untuk menampilkan tombol Edit/Hapus.
+// karyawan). Dipakai untuk menampilkan tombol edit per baris (edit-baris.js).
 let isAdmin = false;
 
 // Animasi pop-up: 'display' diubah dulu, baru class 'open' ditambahkan
@@ -209,6 +209,14 @@ async function runScript(fnName, ...args){
     const [id, wo] = args;
     const { error } = await sb.rpc('ubah_wo_part', { p_id: id, p_wo: wo || null });
     if (error) throw new Error(error.message || 'Gagal menyimpan WO');
+    return runScript('getAllData');
+  }
+
+  if (fnName === 'ubahAgingPart') {
+    // tanggal = 'yyyy-mm-dd' (tanggal mulai aging, lihat sql/08-ubah-aging.sql)
+    const [id, tanggal] = args;
+    const { error } = await sb.rpc('ubah_aging_part', { p_id: id, p_tanggal: tanggal });
+    if (error) throw new Error(error.message || 'Gagal menyimpan aging');
     return runScript('getAllData');
   }
 
@@ -602,8 +610,9 @@ function renderStokSheet(){
   const startIdx = (stokPage - 1) * STOK_PAGE_SIZE;
   const pageRows = rows.slice(startIdx, startIdx + STOK_PAGE_SIZE);
 
-  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td class="part-col"><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td>${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td><td class="ag-col">${selAgingHtml(p)}</td></tr>`).join('');
+  tbody.innerHTML = pageRows.map((p,i)=>`<tr data-id="${esc(p.id)}" tabindex="0"><td>${startIdx+i+1}</td><td class="pn">${fmtPN(p.pn, q)}</td><td class="part-col"><span class="m-pn">${fmtPN(p.pn, q)}</span><span class="m-name">${hl(p.desc, q)}</span>${barisWoHpHtml(p, q)}${p.remarks?`<span class="m-note"><b>NOTE:</b> ${esc(p.remarks)}</span>`:''}</td><td class="unit-col">${esc(p.unit)}</td><td class="status-col">${statusBadge(p.status)}</td><td class="wo-col">${selWoHtml(p, q)}</td><td class="loc"><span class="hl-loc">${esc(p.loc||'-')}</span></td><td class="qty ${p.qty<=0?'low':''}">${p.qty}${agingHpHtml(p)}</td><td class="ket-col ${p.remarks?'has-remarks':''}" style="color:var(--text-muted);font-size:12.5px;">${esc(p.remarks||'-')}</td><td class="ag-col">${selAgingHtml(p)}</td>${ebSelAksiHtml()}</tr>`).join('');
   document.getElementById('stokKartu').innerHTML = pageRows.map(p=>kartuStokHtml(p, q)).join('');   // stok-kartu.js (HP)
+  ebSetelahRender();   // edit-baris.js: tombol edit admin per baris
   markSelectedRow();
 
   renderPaginationControls('stokPagination', stokPage, totalPages, rows.length, 'item', (newPage)=>{
@@ -1059,10 +1068,11 @@ try{
 
 // =====================================================================
 // Aksi cepat: klik/ketuk baris di tab Stok -> panel detail part.
-// Dari panel yang SAMA user bisa Ambil / Transfer (semua orang) atau
-// Edit / Hapus (khusus admin). Isi panel berganti, tidak menumpuk modal.
+// Dari panel yang SAMA user bisa Ambil / Transfer. Edit / Hapus (khusus
+// admin) ada langsung di baris tabel, lihat edit-baris.js. Isi panel
+// berganti, tidak menumpuk modal.
 // Tombol Back HP & tombol Esc menutup panel. Semua simpan tetap lewat
-// RPC yang sudah ada (ambil_barang, transfer_stok, update_part, delete_part).
+// RPC yang sudah ada (ambil_barang, transfer_stok).
 // =====================================================================
 const paState = { open:false, id:null, view:'detail', busy:false, returnId:null };
 const PA_ICON = {
@@ -1178,12 +1188,7 @@ function paDetailHtml(p){
       <button type="button" class="pa-act take" data-pa="go-ambil" ${empty?'disabled':''}><span class="ic">${PA_ICON.take}</span><span><b>Ambil</b><small>Keluarkan untuk dipakai</small></span></button>
       <button type="button" class="pa-act move" data-pa="go-transfer" ${empty?'disabled':''}><span class="ic">${PA_ICON.move}</span><span><b>Transfer</b><small>Pindah lokasi / status</small></span></button>
     </div>
-    ${empty ? `<div class="pa-empty">Stok part ini habis. <button type="button" data-pa="to-input">Tambah stok lewat Input</button></div>` : ''}
-    ${isAdmin ? `<div class="pa-admin">
-      <span class="pa-admin-label">Admin</span>
-      <button type="button" class="pa-link" data-pa="go-edit">Edit data</button>
-      <button type="button" class="pa-link danger" data-pa="go-hapus">Hapus baris</button>
-    </div>` : ''}`;
+    ${empty ? `<div class="pa-empty">Stok part ini habis. <button type="button" data-pa="to-input">Tambah stok lewat Input</button></div>` : ''}`;
 }
 function paStepperHtml(max){
   return `<div class="field"><label for="pa_qty">Jumlah</label>
@@ -1229,53 +1234,12 @@ function paTransferHtml(p){
     <div class="pa-err" id="pa_err" role="alert"></div>
     <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-transfer" disabled>Pindahkan</button>`;
 }
-function paEditHtml(p){
-  const unitOpts = ['Excavator','Bulldozer'].map(cat=>`<optgroup label="${cat}">` +
-    UNIT_MODELS.filter(u=>u.cat===cat).map(u=>`<option value="${esc(u.code)}" ${u.code===p.unit?'selected':''}>${esc(u.code)}</option>`).join('') + '</optgroup>').join('');
-  const st = (p.status||'').toUpperCase();
-  return `
-    <div class="field"><label for="pa_unit">Unit model</label><select id="pa_unit">${unitOpts}</select></div>
-    <div class="field"><label for="pa_pn">Parts number</label><input id="pa_pn" class="mono" value="${esc(p.pn)}"></div>
-    <div class="field"><label for="pa_desc">Parts description</label><input id="pa_desc" class="mono" value="${esc(p.desc)}"></div>
-    <div class="pa-row2">
-      <div class="field"><label for="pa_loc">Lokasi</label><input id="pa_loc" class="mono" list="loc_datalist" autocomplete="off" value="${esc(p.loc||'')}"></div>
-      <div class="field"><label for="pa_status_sel">Status</label>
-        <select id="pa_status_sel">
-          <option value="" ${!st?'selected':''}>Tanpa status</option>
-          <option value="RFU" ${st==='RFU'?'selected':''}>RFU</option>
-          <option value="NOT RFU" ${st==='NOT RFU'?'selected':''}>NOT RFU</option>
-        </select></div>
-    </div>
-    <div class="field"><label for="pa_ewo">No. WO</label><input id="pa_ewo" class="mono" inputmode="numeric" maxlength="12" autocomplete="off" value="${esc(p.wo||'')}" placeholder="cth: ${CONTOH_WO}"></div>
-    <div class="field"><label for="pa_eqty">Qty</label><input id="pa_eqty" type="number" min="0" inputmode="numeric" class="mono" value="${p.qty}">
-      <div class="pa-help">Koreksi qty di sini tidak tercatat di Riwayat. Untuk barang masuk/keluar, pakai Input atau Ambil.</div></div>
-    <div class="field"><label for="pa_remarks">Remarks <span class="pa-opt">(opsional)</span></label><input id="pa_remarks" class="mono" value="${esc(p.remarks||'')}"></div>
-    <div class="pa-err" id="pa_err" role="alert"></div>
-    <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-edit">Simpan perubahan</button>`;
-}
-function paHapusHtml(p){
-  return `
-    <div class="pa-plate ${paStatusClass(p.status)}" style="margin-bottom:14px;">
-      <div class="pa-qty ${Number(p.qty)<=0?'zero':''}"><span class="n">${p.qty}</span><span class="l">pcs</span></div>
-      <dl class="pa-spec">
-        <div><dt>Unit</dt><dd>${esc(p.unit)}</dd></div>
-        <div><dt>Lokasi</dt><dd>${esc(p.loc||'-')}</dd></div>
-      </dl>
-    </div>
-    <div class="pa-warn">Baris ini akan hilang dari tab Stok. Riwayat transaksinya <strong>tetap tersimpan</strong>. Tindakan ini tidak bisa dibatalkan.</div>
-    <div class="pa-err" id="pa_err" role="alert"></div>
-    <div class="pa-row2">
-      <button type="button" class="btn btn-outline pa-submit" data-pa="back">Batal</button>
-      <button type="button" class="btn btn-red pa-submit" id="pa_submit" data-pa="submit-hapus">Hapus baris</button>
-    </div>`;
-}
-
 function paRender(){
   const p = paPart();
   const body = document.getElementById('paBody');
   if(!p){ closePartSheet(); return; }
   const v = paState.view;
-  const views = { detail:paDetailHtml, ambil:paAmbilHtml, transfer:paTransferHtml, edit:paEditHtml, hapus:paHapusHtml };
+  const views = { detail:paDetailHtml, ambil:paAmbilHtml, transfer:paTransferHtml };
   body.innerHTML = paHeadHtml(p, v !== 'detail') + (views[v] || paDetailHtml)(p);
   body.scrollTop = 0;
   paBind(p);
@@ -1332,8 +1296,6 @@ function paBind(p){
     else if(a === 'back') paGo('detail');
     else if(a === 'go-ambil') paGo('ambil');
     else if(a === 'go-transfer') paGo('transfer');
-    else if(a === 'go-edit') paGo('edit');
-    else if(a === 'go-hapus') paGo('hapus');
     else if(a === 'minus') paSetQty(paQty() - 1);
     else if(a === 'plus') paSetQty(paQty() + 1);
     else if(a === 'all') paSetQty(Number(paPart().qty));
@@ -1366,7 +1328,7 @@ async function paSubmit(kind){
   const btn = document.getElementById('pa_submit');
   const val = id => (document.getElementById(id)?.value || '').trim();
   const idleText = btn.textContent;
-  paState.busy = true; btn.disabled = true; btn.textContent = kind === 'hapus' ? 'Menghapus...' : 'Menyimpan...';
+  paState.busy = true; btn.disabled = true; btn.textContent = 'Menyimpan...';
   errEl.textContent = '';
   try{
     let data, msg;
@@ -1379,19 +1341,6 @@ async function paSubmit(kind){
       const st = document.querySelector('input[name="pa_status"]:checked')?.value || 'RFU';
       data = await runScript('transferStok', p.id, q, loc, st, val('pa_note'), nama, val('pa_wo'));
       msg = `${q} pcs ${p.pn} dipindah ke ${loc.toUpperCase()} (${st})`;
-    } else if(kind === 'edit'){
-      const pn = val('pa_pn'), desc = val('pa_desc'), qty = Number(val('pa_eqty'));
-      if(!pn || !desc) throw new Error('Parts number dan description wajib diisi.');
-      if(!Number.isInteger(qty) || qty < 0) throw new Error('Qty harus angka bulat 0 atau lebih.');
-      const wo = val('pa_ewo');
-      if(!woBenar(wo)) throw new Error(PESAN_WO_SALAH);
-      data = await runScript('updatePart', p.id, val('pa_unit'), pn, desc, val('pa_loc'), qty, val('pa_status_sel'), val('pa_remarks'));
-      // WO disimpan lewat RPC terpisah (ubah_wo_part), hanya kalau berubah
-      if(wo !== (p.wo || '')) data = await runScript('ubahWoPart', p.id, wo);
-      msg = 'Perubahan data stok tersimpan';
-    } else if(kind === 'hapus'){
-      data = await runScript('deletePart', p.id);
-      msg = `Berhasil menghapus ${p.pn}`;
     }
     parts = data.parts;
     paState.busy = false;
