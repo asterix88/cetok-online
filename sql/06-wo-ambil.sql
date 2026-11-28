@@ -9,7 +9,7 @@
 --
 -- Isi file ini:
 --   1. Kolom baru riwayat.wo_ambil
---   2. rapikan_wo  : format WO jadi 9 angka saja (awalan bebas: 20, 22, 25, ...)
+--   2. rapikan_wo  : format WO jadi 12 angka (awalan bebas: 20, 22, 25, ...)
 --   3. ambil_barang: tambah parameter p_wo_ambil (boleh kosong)
 --   4. get_all_data & get_riwayat_page: kirim 'wo_ambil' ke web,
 --      pencarian riwayat ikut cek WO pengambilan
@@ -27,7 +27,7 @@ alter table public.riwayat add column if not exists wo_ambil text;
 
 
 -- ---------------------------------------------------------------------
--- 2. rapikan_wo: kosong -> null, selain itu wajib 9 angka.
+-- 2. rapikan_wo: kosong -> null, selain itu wajib 12 angka.
 --    Awalan WO tidak pasti (20, 22, 25, ...), jadi tidak dicek lagi.
 -- ---------------------------------------------------------------------
 create or replace function public.rapikan_wo(p_wo text)
@@ -41,8 +41,8 @@ begin
   if v_wo is null then
     return null;
   end if;
-  if v_wo !~ '^[0-9]{9}$' then
-    raise exception 'Format WO harus 9 angka, cth: 200041587';
+  if v_wo !~ '^[0-9]{12}$' then
+    raise exception 'Format WO harus 12 angka, cth: 200012345678';
   end if;
   return v_wo;
 end;

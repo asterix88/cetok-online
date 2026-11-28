@@ -1199,7 +1199,7 @@ function paStepperHtml(max){
 function paAmbilHtml(p){
   return paContextHtml(p) + paStepperHtml(p.qty) + `
     <div class="field"><label for="pa_note">Keperluan</label><input id="pa_note" class="mono" placeholder="cth: Perbaikan unit E5138" autocomplete="off"></div>
-    <div class="field"><label for="pa_wo_ambil">WO pengambilan <span class="pa-opt">(opsional)</span></label><input id="pa_wo_ambil" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="cth: ${CONTOH_WO}"></div>
+    <div class="field"><label for="pa_wo_ambil">WO pengambilan</label><input id="pa_wo_ambil" class="mono" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="cth: ${CONTOH_WO}"></div>
     <div class="field"><label for="pa_nama">Nama pengambil</label><input id="pa_nama" class="mono nama-login" value="${esc(namaLogin())}" readonly tabindex="-1"></div>
     <div class="pa-err" id="pa_err" role="alert"></div>
     <button type="button" class="btn btn-amber pa-submit" id="pa_submit" data-pa="submit-ambil" disabled>Ambil</button>`;
@@ -1217,7 +1217,7 @@ function paTransferHtml(p){
       ${chips.length ? `<div class="pa-chips">${chips.map(l=>`<button type="button" class="pa-chip" data-pa="loc" data-loc="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}
     </div>
     <div class="field"><label for="pa_wo">No. WO</label>
-      <input id="pa_wo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="${esc(p.wo || 'cth: ' + CONTOH_WO)}"></div>
+      <input id="pa_wo" class="mono" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="${esc(p.wo || 'cth: ' + CONTOH_WO)}"></div>
     <div class="field"><label>Status di tujuan</label>
       <div class="pa-seg" role="radiogroup">
         <label class="rfu ${st==='RFU'?'on':''}"><input type="radio" name="pa_status" value="RFU" ${st==='RFU'?'checked':''}>RFU</label>
@@ -1246,7 +1246,7 @@ function paEditHtml(p){
           <option value="NOT RFU" ${st==='NOT RFU'?'selected':''}>NOT RFU</option>
         </select></div>
     </div>
-    <div class="field"><label for="pa_ewo">No. WO</label><input id="pa_ewo" class="mono" inputmode="numeric" maxlength="9" autocomplete="off" value="${esc(p.wo||'')}" placeholder="cth: ${CONTOH_WO}"></div>
+    <div class="field"><label for="pa_ewo">No. WO</label><input id="pa_ewo" class="mono" inputmode="numeric" maxlength="12" autocomplete="off" value="${esc(p.wo||'')}" placeholder="cth: ${CONTOH_WO}"></div>
     <div class="field"><label for="pa_eqty">Qty</label><input id="pa_eqty" type="number" min="0" inputmode="numeric" class="mono" value="${p.qty}">
       <div class="pa-help">Koreksi qty di sini tidak tercatat di Riwayat. Untuk barang masuk/keluar, pakai Input atau Ambil.</div></div>
     <div class="field"><label for="pa_remarks">Remarks <span class="pa-opt">(opsional)</span></label><input id="pa_remarks" class="mono" value="${esc(p.remarks||'')}"></div>
@@ -1298,7 +1298,7 @@ function paUpdate(){
     const qOk = q >= 1 && q <= max;
     if(v === 'ambil'){
       const woAmbil = val('pa_wo_ambil');
-      document.getElementById('pa_err').textContent = !woBenar(woAmbil) && woAmbil.length >= 9 ? PESAN_WO_SALAH : '';
+      document.getElementById('pa_err').textContent = !woBenar(woAmbil) && woAmbil.length >= PANJANG_WO ? PESAN_WO_SALAH : '';
       btn.disabled = paState.busy || !qOk || !val('pa_note') || !val('pa_nama') || !woBenar(woAmbil);
       btn.textContent = paState.busy ? 'Menyimpan...' : (qOk ? `Ambil ${q} pcs` : 'Ambil');
     } else {
@@ -1311,7 +1311,7 @@ function paUpdate(){
       document.querySelectorAll('[data-pa="loc"]').forEach(c=>c.classList.toggle('on', c.dataset.loc === loc));
       document.querySelectorAll('.pa-seg label').forEach(l=>l.classList.toggle('on', l.querySelector('input').checked));
       document.getElementById('pa_err').textContent =
-        !woOk && wo.length >= 9 ? PESAN_WO_SALAH :
+        !woOk && wo.length >= PANJANG_WO ? PESAN_WO_SALAH :
         same ? 'Lokasi, status, dan WO tujuan sama dengan asal. Ganti salah satunya.' : '';
       btn.disabled = paState.busy || !qOk || !loc || same || !woOk || !val('pa_nama');
       btn.textContent = paState.busy ? 'Menyimpan...' : ('Pindahkan' + (qOk ? ` ${q} pcs` : '') + (loc ? ` ke ${loc}` : ''));

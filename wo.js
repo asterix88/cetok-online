@@ -1,7 +1,7 @@
 // =====================================================================
 // wo.js -- Nomor WO (work order)
 //
-// Format WO: 9 angka, awalan tidak pasti (20, 22, 25, ...), contoh 200041587.
+// Format WO: 12 angka, awalan tidak pasti (20, 22, 25, ...), contoh 200012345678.
 //
 // Ada dua macam WO:
 //   - WO input      : melekat di baris part (stok.wo)
@@ -21,9 +21,10 @@
 // selectAmbilPart dari sana).
 // =====================================================================
 
-const POLA_WO = /^[0-9]{9}$/;
-const CONTOH_WO = '200041587';
-const PESAN_WO_SALAH = 'Format WO harus 9 angka, cth: ' + CONTOH_WO;
+const PANJANG_WO = 12;
+const POLA_WO = /^[0-9]{12}$/;          // 12 angka, sama dengan PANJANG_WO
+const CONTOH_WO = '200012345678';
+const PESAN_WO_SALAH = `Format WO harus ${PANJANG_WO} angka, cth: ${CONTOH_WO}`;
 const MIN_KETIK_SARAN_WO = 2;   // saran part baru muncul setelah 2 angka diketik
 
 const IKON_PANAH_WO = '<svg class="wo-panah" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
@@ -57,7 +58,7 @@ function barisWoHpHtml(p, q){
 
 // Chip WO di kartu riwayat:
 //   tanpa WO           -> [WO –]
-//   WO biasa           -> [WO 200041587]
+//   WO biasa           -> [WO 200012345678]
 //   transfer ganti WO  -> [WO 200039220 -> 200046102]  (yang lama dicoret)
 function chipWoHtml(t){
   if(!t.wo && !t.wo_lama){

@@ -9,7 +9,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `03-wo.sql` | Kolom WO di stok & riwayat, NRP pencatat di riwayat, fungsi `ubah_wo_part` (admin) | belum dijalankan |
 | `04-aging.sql` | Kolom `aging_sejak` di stok + trigger reset saat status berganti | belum dijalankan (setelah 03) |
 | `05-riwayat-jenis.sql` | Filter Riwayat: Ambil dan Transfer dipisah | belum dijalankan (setelah 03) |
-| `06-wo-ambil.sql` | WO pengambilan di riwayat (terpisah dari WO input), format WO 9 angka bebas awalan | belum dijalankan (setelah 05) |
+| `06-wo-ambil.sql` | WO pengambilan di riwayat (terpisah dari WO input), format WO 12 angka bebas awalan | belum dijalankan (setelah 05) |
 
 ## Urutan pasang login NRP
 
@@ -25,7 +25,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 3. Isi WO part lama lewat panel part > Edit data (khusus admin), atau sekaligus lewat SQL:
 
 ```sql
-update public.stok set wo = '200041587' where id = '...';
+update public.stok set wo = '200012345678' where id = '...';
 ```
 
 ## Urutan pasang Aging
