@@ -11,6 +11,7 @@ File SQL dijalankan manual di **Supabase Dashboard > SQL Editor**, berurutan ses
 | `05-riwayat-jenis.sql` | Filter Riwayat: Ambil dan Transfer dipisah | belum dijalankan (setelah 03) |
 | `06-wo-ambil.sql` | WO pengambilan di riwayat (terpisah dari WO input), format WO 12 angka bebas awalan | belum dijalankan (setelah 05) |
 | `07-lokasi-tampil.sql` | Lokasi yang tampil di cetok-online: fungsi trigger `sync_stok_is_filtered` + update `is_filtered`, ditambah LEMARI HIJAU, LEMARI PLANNER, VENDOR | belum dijalankan |
+| `08-ubah-aging.sql` | Fungsi `ubah_aging_part` (admin): ganti tanggal mulai aging dari tombol edit baris stok | belum dijalankan (setelah 04) |
 
 ## Urutan pasang login NRP
 
