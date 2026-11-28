@@ -1,0 +1,211 @@
+/* =====================================================================
+   tema-hidup.css -- Bayangan & warna supaya tampilan lebih hidup
+   (versi uji, dimuat PALING AKHIR setelah tata-letak.css)
+
+   Prinsip:
+     - Bentuk (kartu, tombol, kolom isian) diberi bayangan halus
+       bertingkat, bukan garis tepi saja.
+     - Warna dipakai hanya bila punya arti:
+         hijau = RFU / Input, merah = NOT RFU / Ambil, kuning = Transfer
+         dan aksi utama.
+     - Menu samping desktop & panel kiri login memakai warna gelap merek
+       (arang + kuning) di tema terang maupun gelap.
+     - Font tidak berubah: Oswald judul, Inter teks, JetBrains Mono kode.
+   ===================================================================== */
+
+:root{
+  /* Bayangan (tema gelap) */
+  --bayang-1: 0 1px 2px rgba(0,0,0,.35);
+  --bayang-2: 0 1px 2px rgba(0,0,0,.30), 0 10px 24px -10px rgba(0,0,0,.55);
+  --bayang-3: 0 2px 4px rgba(0,0,0,.30), 0 18px 40px -12px rgba(0,0,0,.60);
+  --kilau-atas: inset 0 1px 0 rgba(255,255,255,.035);
+  --bayang-tombol: 0 1px 2px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+
+  /* Warna merek untuk menu samping & panel login (sama di dua tema) */
+  --merek-gelap: #17191C;
+  --merek-gelap-2: #202328;
+  --merek-garis: #2C3036;
+  --merek-teks: #ECE9E3;
+  --merek-redup: #8E949A;
+  --merek-kuning: #E0A04A;
+
+  --radius: 9px;
+  --radius-sm: 6px;
+}
+:root[data-theme="light"]{
+  --bg:#F3F3EF;
+  --surface-2:#F0F0EB;
+  --border:#E0E0DA;
+  --border-strong:#CBCCC5;
+  --bayang-1: 0 1px 2px rgba(24,28,26,.06), 0 1px 1px rgba(24,28,26,.03);
+  --bayang-2: 0 1px 2px rgba(24,28,26,.05), 0 8px 20px -8px rgba(24,28,26,.14);
+  --bayang-3: 0 2px 4px rgba(24,28,26,.06), 0 20px 44px -14px rgba(24,28,26,.24);
+  --kilau-atas: none;
+  --bayang-tombol: 0 1px 2px rgba(24,28,26,.18), inset 0 1px 0 rgba(255,255,255,.20);
+}
+
+
+/* ---------------------------------------------------------------------
+   1. Bentuk dasar: kartu, kolom isian, tombol
+   --------------------------------------------------------------------- */
+.card{box-shadow:var(--bayang-2),var(--kilau-atas);border-color:var(--border);}
+
+input,select{box-shadow:var(--bayang-1);}
+input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 18%,transparent);}
+input[readonly]{box-shadow:none;}
+
+button.btn{transition:filter .15s ease, transform .15s ease, box-shadow .15s ease;}
+.btn-red,.btn-amber,.btn-green{box-shadow:var(--bayang-tombol);}
+.btn-red:not(:disabled):hover,.btn-amber:not(:disabled):hover,.btn-green:not(:disabled):hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:var(--bayang-tombol),0 6px 14px -6px rgba(0,0,0,.35);}
+.btn-red:not(:disabled):active,.btn-amber:not(:disabled):active,.btn-green:not(:disabled):active{transform:none;filter:brightness(.97);}
+.btn-outline{box-shadow:var(--bayang-1);}
+
+
+
+/* ---------------------------------------------------------------------
+   2. Header HP + tab
+   --------------------------------------------------------------------- */
+header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);}
+.theme-toggle,.akun-btn .akun-inisial{box-shadow:var(--bayang-1);}
+.akun-inisial{background:linear-gradient(140deg,var(--amber-dim),color-mix(in srgb,var(--amber) 28%,var(--amber-dim)));}
+
+
+/* ---------------------------------------------------------------------
+   3. Ringkasan RFU / NOT RFU
+   --------------------------------------------------------------------- */
+.stats{box-shadow:var(--bayang-2),var(--kilau-atas);border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;}
+.stat{position:relative;transition:background .15s ease;}
+.stat:hover{background:color-mix(in srgb,var(--green) 5%,transparent);}
+.stat.warn:hover{background:color-mix(in srgb,var(--red) 5%,transparent);}
+/* Tanpa titik warna di depan label: warna cukup di angkanya */
+.stat .lbl::before{display:none;}
+.stat:not(.warn) .num{color:var(--green);}
+
+
+/* ---------------------------------------------------------------------
+   4. Filter (cari, status, lokasi, unit, urutan, jenis riwayat)
+   --------------------------------------------------------------------- */
+.stok-alat .stok-cari input,#riwayat_search{background:var(--surface);}
+.filter-btn{box-shadow:var(--bayang-1);}
+.filter-btn.active{box-shadow:var(--bayang-1),0 0 0 3px color-mix(in srgb,var(--amber) 12%,transparent);}
+.stok-status button.on,.riwayat-jenis button.on,.seg-status button.on{box-shadow:0 1px 2px rgba(0,0,0,.10),0 0 0 1px var(--border);}
+.stok-status button[data-status="RFU"].on{color:var(--green);}
+.stok-status button[data-status="NOT RFU"].on{color:var(--red);}
+.sheet{box-shadow:var(--bayang-3);border-color:var(--border);}
+.sheet-item.active{background:color-mix(in srgb,var(--amber) 9%,transparent);}
+
+
+/* ---------------------------------------------------------------------
+   5. Stok: kartu HP & tabel desktop
+   --------------------------------------------------------------------- */
+.sk{transition:background .12s ease;}
+.sk:active{background:var(--surface-2);}
+.sk-qty{color:var(--text);}
+.sk-aging b{font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;}
+
+@media (min-width:900px){
+  #tab-stok thead th{background:var(--surface-2);color:var(--text-muted);}
+  #tab-stok tbody tr{transition:background .12s ease;}
+  #tab-stok tbody tr:hover{background:color-mix(in srgb,var(--amber) 5%,transparent);}
+  #tab-stok tbody tr.pa-selected{background:color-mix(in srgb,var(--amber) 9%,transparent);box-shadow:inset 3px 0 0 var(--amber);}
+  #tab-stok td.qty{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;}
+}
+
+
+/* ---------------------------------------------------------------------
+   6. Riwayat
+   --------------------------------------------------------------------- */
+.rk{transition:background .12s ease;}
+.rk:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent);}
+.rk-ikon{box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 18%,transparent);}
+.rk-unit{box-shadow:var(--bayang-1);}
+.wo-chip{background:var(--surface);}
+
+
+/* ---------------------------------------------------------------------
+   7. Form Ambil / Transfer / Input
+      Garis warna di atas kartu = jenis transaksi.
+   --------------------------------------------------------------------- */
+.form-kartu{position:relative;overflow:hidden;}
+.form-kartu::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;}
+#tab-ambil .form-kartu::before{background:var(--red);}
+#tab-transfer .form-kartu::before{background:var(--amber);}
+#tab-input .form-kartu::before{background:var(--green);}
+.found-card{box-shadow:var(--bayang-1);}
+
+@media (min-width:900px){
+  .form-judul{display:flex;align-items:center;gap:8px;}
+  .form-judul::before{content:"";width:6px;height:6px;border-radius:2px;background:var(--border-strong);}
+  #tab-ambil .form-bagian:first-child .form-judul::before{background:var(--red);}
+  #tab-transfer .form-bagian:first-child .form-judul::before{background:var(--amber);}
+  #tab-input .form-bagian:first-child .form-judul::before{background:var(--green);}
+  .qty-step{box-shadow:var(--bayang-1);}
+  .form-kaki{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface));}
+  .who-ini{background:linear-gradient(140deg,var(--amber-dim),color-mix(in srgb,var(--amber) 28%,var(--amber-dim)));}
+  .form-panel{box-shadow:var(--bayang-2),var(--kilau-atas);}
+  .fp-bagian:first-child{background:linear-gradient(180deg,color-mix(in srgb,var(--amber) 5%,transparent),transparent);}
+  .fp-baris b{font-family:'Oswald',sans-serif;font-size:15px;}
+}
+
+
+/* ---------------------------------------------------------------------
+   8. Desktop: menu samping warna gelap merek
+   --------------------------------------------------------------------- */
+@media (min-width:900px){
+  .app::before{background:
+      radial-gradient(420px 260px at 0% 100%, color-mix(in srgb,var(--merek-kuning) 10%,transparent), transparent 70%),
+      var(--merek-gelap);
+    border-right:1px solid var(--merek-garis);}
+  .top-row > div:first-child{border-bottom-color:var(--merek-garis);}
+  header.top h1{color:var(--merek-teks);}
+  header.top .sub{color:var(--merek-redup);}
+  nav.tabs button{color:var(--merek-redup);position:relative;}
+  nav.tabs button svg{opacity:.9;}
+  nav.tabs button:hover{background:var(--merek-gelap-2);color:var(--merek-teks);}
+  nav.tabs button.active{background:var(--merek-gelap-2);color:var(--merek-teks);box-shadow:inset 0 0 0 1px var(--merek-garis), 0 1px 2px rgba(0,0,0,.4);}
+  nav.tabs button.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--merek-kuning);}
+  nav.tabs button.active svg{color:var(--merek-kuning);}
+
+  /* Judul halaman + garis kuning pendek di bawahnya */
+  .judul-halaman{position:relative;}
+  .stats{box-shadow:var(--bayang-2),var(--kilau-atas);}
+}
+
+
+/* ---------------------------------------------------------------------
+   9. Layar login
+   --------------------------------------------------------------------- */
+.auth-input input{box-shadow:var(--bayang-1);}
+/* Kolom NRP / PIN saat aktif: garis netral, tanpa warna kuning */
+.auth-input input:focus{border-color:var(--text-muted);box-shadow:var(--bayang-1),0 0 0 3px color-mix(in srgb,var(--text-muted) 14%,transparent);}
+.auth-btn{box-shadow:var(--bayang-tombol), 0 8px 18px -10px rgba(0,0,0,.45);transition:filter .15s ease, transform .15s ease;}
+.auth-btn:not(:disabled):hover{filter:brightness(1.05);transform:translateY(-1px);}
+.auth-brand img,.auth-siapa .akun-inisial{box-shadow:var(--bayang-2);}
+
+@media (min-width:900px){
+  .auth-main{background:var(--bg);}
+  .auth-form{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px 32px;box-shadow:var(--bayang-3),var(--kilau-atas);max-width:420px;}
+
+  /* Panel kiri: arang + cahaya kuning + pola garis halus */
+  .auth-aside{color:var(--merek-teks);border-right:none;background:
+      radial-gradient(700px 500px at 0% 100%, color-mix(in srgb,var(--merek-kuning) 22%,transparent), transparent 65%),
+      radial-gradient(500px 360px at 100% 0%, rgba(255,255,255,.05), transparent 70%),
+      linear-gradient(160deg,#1C1F23 0%,#141618 100%);}
+  .auth-aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 40%,#000 70%,transparent);}
+  .auth-besar,.auth-kaki{position:relative;}
+  .auth-besar img{box-shadow:0 20px 50px -18px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06);}
+  .auth-besar h2{color:#F4F1EB;}
+  .auth-besar p{color:var(--merek-redup);}
+  .auth-garis{background:var(--merek-kuning);width:64px;height:3px;}
+  .auth-kaki{color:var(--merek-redup);}
+  .auth-watermark{opacity:.06;}
+}
+
+/* ---------- Status RFU / NOT RFU ----------
+   Tanpa kotak: warna hanya pada teks, sama dengan angka ringkasan. */
+.status-badge.rfu,.status-badge.not-rfu{background:transparent;box-shadow:none;padding:0 2px;letter-spacing:.4px;}
+.status-badge.rfu{color:var(--green);}
+.status-badge.not-rfu{color:var(--red);}
