@@ -32,6 +32,7 @@ select.eb-in{padding-right:4px;}
 .eb-in.lok{min-width:80px;}
 .eb-in.qty{min-width:52px;text-align:right;}
 .eb-in.ket{min-width:72px;}
+.eb-in.tgl{min-width:128px;padding-right:4px;}
 
 /* Layar desktop sempit: tabel boleh digeser ke samping, jangan terpotong */
 @media (min-width:900px){

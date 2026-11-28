@@ -7,7 +7,9 @@
 //   ✓ simpan, ✗ batal, sampah = hapus (minta konfirmasi dulu).
 //
 // Simpan lewat RPC yang sudah ada: update_part, ubah_wo_part, delete_part
-// (lihat runScript di script.js). Aging tidak bisa diedit (dihitung DB).
+// (lihat runScript di script.js), plus ubah_aging_part (sql/08-ubah-aging.sql)
+// untuk tanggal mulai aging, mis. kalau input ke web terlambat dari
+// tanggal komponen berganti status.
 // Hanya satu baris yang bisa diedit dalam satu waktu.
 // File ini dimuat SETELAH script.js, wo.js, aging.js, dan stok-kartu.js.
 // =====================================================================
@@ -54,13 +56,21 @@ function ebOpsiStatus(pilih){
     .map(([v, t]) => `<option value="${v}" ${v === pilih ? 'selected' : ''}>${t}</option>`).join('');
 }
 
-// Satu isian. nama = kunci di draft (unit, pn, desc, status, wo, loc, qty, remarks)
+// Tanggal 'yyyy-mm-dd' menurut jam HP/laptop (untuk isian type="date")
+function ebTanggalIso(waktu){
+  const d = new Date(waktu);
+  const dua = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${dua(d.getMonth() + 1)}-${dua(d.getDate())}`;
+}
+
+// Satu isian. nama = kunci di draft (unit, pn, desc, status, wo, loc, qty, remarks, aging)
 function ebIsian(nama, d, kelas, label){
   const k = `class="eb-in ${kelas}" data-isi="${nama}" aria-label="${label}"`;
   if(nama === 'unit')   return `<select ${k}>${ebOpsiUnit(d.unit)}</select>`;
   if(nama === 'status') return `<select ${k}>${ebOpsiStatus(d.status)}</select>`;
   if(nama === 'qty')    return `<input ${k} type="number" min="0" inputmode="numeric" value="${esc(d.qty)}">`;
   if(nama === 'wo')     return `<input ${k} inputmode="numeric" maxlength="${PANJANG_WO}" autocomplete="off" value="${esc(d.wo)}">`;
+  if(nama === 'aging')  return `<input ${k} type="date" max="${ebTanggalIso(Date.now())}" value="${esc(d.aging)}">`;
   if(nama === 'loc')    return `<input ${k} list="loc_datalist" autocomplete="off" value="${esc(d.loc)}">`;
   return `<input ${k} autocomplete="off" value="${esc(d[nama])}">`;
 }
@@ -69,7 +79,8 @@ function ebIsian(nama, d, kelas, label){
 function ebDraftDari(p){
   return {
     unit: p.unit || '', pn: p.pn || '', desc: p.desc || '', status: (p.status || '').toUpperCase(),
-    wo: p.wo || '', loc: p.loc || '', qty: String(p.qty ?? 0), remarks: p.remarks || ''
+    wo: p.wo || '', loc: p.loc || '', qty: String(p.qty ?? 0), remarks: p.remarks || '',
+    aging: p.aging_sejak ? ebTanggalIso(p.aging_sejak) : ''
   };
 }
 
@@ -85,6 +96,7 @@ function ebIsiBarisTabel(tr){
   tr.querySelector('td.loc').innerHTML = ebIsian('loc', d, 'lok', 'Lokasi');
   tr.querySelector('td.qty').innerHTML = ebIsian('qty', d, 'qty', 'Qty');
   tr.querySelector('td.ket-col').innerHTML = ebIsian('remarks', d, 'ket', 'Keterangan');
+  tr.querySelector('td.ag-col').innerHTML = ebIsian('aging', d, 'tgl', 'Aging sejak');
   tr.querySelector('td.eb-aksi').innerHTML = ebTombolEditHtml();
   if(ebState.tanyaHapus){
     tr.insertAdjacentHTML('afterend',
@@ -106,7 +118,8 @@ function ebIsiKartu(kartu){
       ${isian('status', 'Status')}
       ${isian('loc', 'Lokasi')}
       ${isian('qty', 'Qty')}
-      ${isian('wo', 'WO', true)}
+      ${isian('wo', 'WO')}
+      ${isian('aging', 'Aging sejak')}
       ${isian('remarks', 'Keterangan', true)}
     </div>
     <div class="eb-kaki">${ebState.tanyaHapus ? ebKonfirmasiHtml() : ebTombolEditHtml()}</div>`;
@@ -167,6 +180,8 @@ function ebCekDraft(d){
   const qty = Number(d.qty);
   if(d.qty === '' || !Number.isInteger(qty) || qty < 0) return 'Qty harus angka bulat 0 atau lebih.';
   if(!woBenar(d.wo.trim())) return PESAN_WO_SALAH;
+  if(!d.aging) return 'Tanggal aging wajib diisi.';
+  if(d.aging > ebTanggalIso(Date.now())) return 'Tanggal aging tidak boleh lewat dari hari ini.';
   return '';
 }
 
@@ -197,6 +212,10 @@ function ebSimpan(){
     // WO disimpan lewat RPC terpisah (ubah_wo_part), hanya kalau berubah
     const wo = d.wo.trim();
     if(wo !== (p.wo || '')) data = await runScript('ubahWoPart', p.id, wo);
+    // Aging disimpan paling akhir, supaya tidak tertimpa reset otomatis
+    // saat status berganti (trigger di sql/04-aging.sql)
+    const agingAwal = p.aging_sejak ? ebTanggalIso(p.aging_sejak) : '';
+    if(d.aging !== agingAwal) data = await runScript('ubahAgingPart', p.id, d.aging);
     return { data, pesan: 'Perubahan data stok tersimpan' };
   });
 }

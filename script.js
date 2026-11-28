@@ -212,6 +212,14 @@ async function runScript(fnName, ...args){
     return runScript('getAllData');
   }
 
+  if (fnName === 'ubahAgingPart') {
+    // tanggal = 'yyyy-mm-dd' (tanggal mulai aging, lihat sql/08-ubah-aging.sql)
+    const [id, tanggal] = args;
+    const { error } = await sb.rpc('ubah_aging_part', { p_id: id, p_tanggal: tanggal });
+    if (error) throw new Error(error.message || 'Gagal menyimpan aging');
+    return runScript('getAllData');
+  }
+
   if (fnName === 'deletePart') {
     const [id] = args;
     const { error } = await sb.rpc('delete_part', { p_id: id });
